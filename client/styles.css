@@ -26,3 +26,59 @@ footer {
     color:#eee;
 }
 
+
+.book {
+    width: 150px;
+    height: 210px;
+    position: relative;
+    display: block;
+    float: left;
+    background-color: #333;
+    margin: 5px;
+    overflow: hidden;
+
+}
+
+.book img {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.book .closeBtn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 999;
+}
+
+.book .bookName {
+    width: 100%;
+    text-align: center;
+    padding: 5px;
+    z-index: 999;
+    background-color: #86616e;
+    color: #fff;
+    font-size: 1.1em;
+    box-sizing: border-box;
+    position:absolute;
+    bottom:25px;
+    left:0;
+    opacity: 0.8;
+    display:none;
+}
+.book:hover .bookName {
+    opacity: 0.8;
+    display:block;
+}
+
+.book .tradeBtn {
+    position:absolute;
+    bottom:0;
+    left:0;
+    width: 100%;
+    text-align: center;
+    z-index: 999;
+    
+}
