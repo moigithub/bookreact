@@ -6,7 +6,7 @@
 
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
-import {createStore,  applyMiddleware} from 'redux';
+import {createStore, combineReducers, applyMiddleware} from 'redux';
 // const Provider = require('react-redux').Provider
 import { Provider, connect } from 'react-redux'
 
@@ -46,13 +46,23 @@ const handleBooks =(state=[],action)=>{
             return state;
     }
 };
+
+const handleUser =(state=null, action)=>{   //user {userid:'1', name:'sfsf'}
+  switch(action.type) {
+      case 'SET_USER':
+        return action.user;
+      default:
+        return state;
+  }
+};
 ////FIN REDUCER ///
 
 ///// STORE ///
 import thunk from 'redux-thunk';
 const initialState = [];
 const createStoreWithThunk = applyMiddleware(thunk)(createStore);
-const bookStore = createStoreWithThunk(handleBooks, initialState);
+const allReducers = combineReducers({books:handleBooks,user:handleUser});
+const bookStore = createStoreWithThunk(allReducers, initialState);
 /*
 const stockStore = createStore(
   handleStocks,
@@ -64,6 +74,10 @@ const stockStore = createStore(
 */
 /// FIN STORE ////
 ////////ACTION CREATOR//////
+function setUser(){
+    return {type:'SET_USER',user: {userId:'1', name:'test'}};
+}
+////////////
 function getServerData() {
 
     return function(dispatch){
@@ -96,6 +110,29 @@ function addBook(bookName) {
         var API_URL ="/api/books";
 
         $.post(API_URL,{"book":bookName},null, "json")
+            .done(function(data){
+                //console.log("data",data);
+                // socket will add data to state
+                dispatch({type: 'ADD_BOOK', book:data})
+            })
+            .fail(function(err){
+                console.log("error",err);
+                alert(err.responseText);
+            });
+    }
+
+}
+
+function toggleBookRequest(book,userId) {
+    return function(dispatch){
+        /// http request
+        var API_URL ="/api/books";
+
+//        $.post(API_URL,{"book":book._id},null, "json")
+        $.ajax({
+            url:`API_URL/${book._id}/${userId}`,
+            type:"PUT"
+        })
             .done(function(data){
                 //console.log("data",data);
                 // socket will add data to state
@@ -241,7 +278,7 @@ function mapDispatchToProps(dispatch){
 function mapStateToProps(state) {
     //console.log("mapstatetoprops store",state);
     return {
-        books:state
+        books:state.books
     }
 }
 var BookList = connect(mapStateToProps,mapDispatchToProps)(_BookList);
@@ -256,6 +293,8 @@ class Main extends React.Component {
     componentDidMount(){
         //get initial data from server
         this.context.store.dispatch(getServerData());
+        
+        this.context.store.dispatch(setUser());
     }
     
     render(){
