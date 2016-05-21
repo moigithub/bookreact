@@ -42,6 +42,23 @@ const handleBooks =(state=[],action)=>{
         case 'REMOVE_BOOK':
             //console.log("reducer del",action);
             return state.filter(book => book.isbn!=action.book.isbn);
+        case 'TOGGLE_BOOK_REQUEST':
+            return state.map(function(book){
+                if(book._id === action.toogle.bookId){
+                    //remove user from list
+                    var newBook= Object.assign({}, book, {
+                        tradeRequest : book.tradeRequest.filter(function(user){user != action.toogle.userId})
+                    });
+                    //add user to list
+                    if(action.toogle.userId){
+                        return Object.assign({}, newBook, {
+                            tradeRequest: [...newBook.tradeRequest, action.toogle.userId]
+                        });
+                    }
+                    return newBook;
+                }
+                return book;
+            })
         default:
             return state;
     }
@@ -77,6 +94,8 @@ const stockStore = createStore(
 function setUser(){
     return {type:'SET_USER',user: {userId:'1', name:'test'}};
 }
+
+
 ////////////
 function getServerData() {
 
@@ -136,7 +155,8 @@ function toggleBookRequest(book,userId) {
             .done(function(data){
                 //console.log("data",data);
                 // socket will add data to state
-                dispatch({type: 'ADD_BOOK', book:data})
+                dispatch({type:'TOGGLE_BOOK_REQUEST', toogle: {bookId:book._id, userId:userId}})
+                
             })
             .fail(function(err){
                 console.log("error",err);
@@ -257,12 +277,12 @@ class _BookList extends React.Component {
     }
 
     render(){
-        const {books, remBook} = this.props;
+        const {books,user, remBook,toggleBook} = this.props;
         console.log("books",this.props);
         return(
             <div class="bookList">
                 {books.map((book,i)=>(
-                    <Book key={i} book={book} onClose={()=>remBook(book)} onTrade={()=>alert('trade!')}/>
+                    <Book key={i} book={book} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, user.userId)}/>
                 ))}
             </div>
         );
@@ -272,13 +292,17 @@ function mapDispatchToProps(dispatch){
     return {
         remBook: (book)=>{
             dispatch(removeBook(book));
+        },
+        toggleBook : (book, userId)=>{
+            dispatch(toggleBookRequest(book,userId));
         }
     };
 }
 function mapStateToProps(state) {
     //console.log("mapstatetoprops store",state);
     return {
-        books:state.books
+        books:state.books,
+        user:state.user
     }
 }
 var BookList = connect(mapStateToProps,mapDispatchToProps)(_BookList);

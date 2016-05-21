@@ -21,7 +21,7 @@ console.log("__dirname+client",path.join(__dirname, 'client'));
 
 module.exports = {
     // Gives you sourcemaps without slowing down rebundling
-  devtool: isDev ? 'eval-source-map':null,
+  devtool: '',  //isDev ? 'eval-cheap-source-map':'eval-source-map',
   devServer: {
 //        contentBase: './client/public',
         progress: true,
