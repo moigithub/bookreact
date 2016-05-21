@@ -46,11 +46,12 @@ const handleBooks =(state=[],action)=>{
             return state.map(function(book){
                 if(book._id === action.toogle.bookId){
                     //remove user from list
+                    let imOnList = book.tradeRequest.indexOf(action.toggle.userId)>-1;
                     var newBook= Object.assign({}, book, {
                         tradeRequest : book.tradeRequest.filter(function(user){user != action.toogle.userId})
                     });
                     //add user to list
-                    if(action.toogle.userId){
+                    if(!imOnList){
                         return Object.assign({}, newBook, {
                             tradeRequest: [...newBook.tradeRequest, action.toogle.userId]
                         });
@@ -149,7 +150,7 @@ function toggleBookRequest(book,userId) {
 
 //        $.post(API_URL,{"book":book._id},null, "json")
         $.ajax({
-            url:`API_URL/${book._id}/${userId}`,
+            url:`${API_URL}/${book._id}/${userId}`,
             type:"PUT"
         })
             .done(function(data){
@@ -252,8 +253,9 @@ class Book extends React.Component {
     }
 
     render(){
-        const {book, onClose, onTrade} = this.props;
+        const {book, userId, onClose, onTrade} = this.props;
         const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
+        var requested = book.tradeRequest.indexOf(userId) > -1;
         return (
             <div className="book">
                 <img src={book.image|| defaultImg} className="bookImg"/>
@@ -263,7 +265,7 @@ class Book extends React.Component {
                 </button> 
                 
                 <button onClick={onTrade} className="tradeBtn">
-                    <span class="glyphicons glyphicons-iphone-transfer" aria-hidden="true">Trade</span>
+                    <span class="glyphicons glyphicons-iphone-transfer" aria-hidden="true">{requested?"cancel request":"Request"}</span>
                 </button> 
             </div>
 
@@ -279,10 +281,11 @@ class _BookList extends React.Component {
     render(){
         const {books,user, remBook,toggleBook} = this.props;
         console.log("books",this.props);
+        const userId =user&&user.userId ? user.userId : null;
         return(
             <div class="bookList">
                 {books.map((book,i)=>(
-                    <Book key={i} book={book} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, user.userId)}/>
+                    <Book key={i} book={book} userId={userId} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, userId)}/>
                 ))}
             </div>
         );
@@ -319,6 +322,7 @@ class Main extends React.Component {
         this.context.store.dispatch(getServerData());
         
         this.context.store.dispatch(setUser());
+        console.log("state",this.context.store.getState());
     }
     
     render(){

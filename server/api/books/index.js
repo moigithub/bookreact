@@ -87,6 +87,10 @@ function getBook(req, res){
   });
 }
 
+function updateBook(req, res){
+  return res.status(200).json({ok:true});
+}
+
 function handleError(res, err) {
   console.log("error",err);
   return res.status(500).send(err);
@@ -101,6 +105,7 @@ var router = express.Router();
 
 router.get('/', getBook);
 router.post('/', addBook);
+router.put('/:book/:userId', updateBook);
 router.delete('/:book', delBook);
 
 module.exports = router;
