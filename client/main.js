@@ -42,24 +42,9 @@ const handleBooks =(state=[],action)=>{
         case 'REMOVE_BOOK':
             //console.log("reducer del",action);
             return state.filter(book => book.isbn!=action.book.isbn);
-        case 'TOGGLE_BOOK_REQUEST':
-            return state.map(function(book){
-                if(book._id === action.toogle.bookId){
-                    //remove user from list
-                    let imOnList = book.tradeRequest.indexOf(action.toggle.userId)>-1;
-                    var newBook= Object.assign({}, book, {
-                        tradeRequest : book.tradeRequest.filter(function(user){user != action.toogle.userId})
-                    });
-                    //add user to list
-                    if(!imOnList){
-                        return Object.assign({}, newBook, {
-                            tradeRequest: [...newBook.tradeRequest, action.toogle.userId]
-                        });
-                    }
-                    return newBook;
-                }
-                return book;
-            })
+        case 'UPDATE_BOOK':
+            console.log("TOGLE reducer action",action);
+            return state.filter(book => book.isbn!=action.book.isbn).concat(action.book);
         default:
             return state;
     }
@@ -114,7 +99,6 @@ function getServerData() {
                 alert(err.responseText);
             });
     }
-
 }
 
 function addBook(bookName) {
@@ -145,18 +129,38 @@ function addBook(bookName) {
 
 function toggleBookRequest(book,userId) {
     return function(dispatch){
+        //change the book tradeRequest
+        //remove user from list
+        let imOnList = book.tradeRequest.indexOf(userId)>-1;
+        var newBook;
+        if(imOnList){
+            //remove
+            newBook= Object.assign({}, book, {
+                tradeRequest : book.tradeRequest.filter(function(user){user != userId})
+            });
+        } else {
+            //add user to list
+            newBook= Object.assign({}, newBook, {
+                tradeRequest: [...newBook.tradeRequest, userId]
+            });
+        }
+
         /// http request
         var API_URL ="/api/books";
 
 //        $.post(API_URL,{"book":book._id},null, "json")
         $.ajax({
-            url:`${API_URL}/${book._id}/${userId}`,
-            type:"PUT"
+            url:`${API_URL}/${book._id}`,
+            type:"PUT",
+            data: newBook,
+            dataType: 'json',
+            //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
-                //console.log("data",data);
+                console.log("data from put",data);
                 // socket will add data to state
-                dispatch({type:'TOGGLE_BOOK_REQUEST', toogle: {bookId:book._id, userId:userId}})
+                console.log("toogleBookRequest", book, userId);
+                dispatch({type:'UPDATE_BOOK', book: newBook});
                 
             })
             .fail(function(err){

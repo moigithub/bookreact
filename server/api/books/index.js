@@ -88,7 +88,17 @@ function getBook(req, res){
 }
 
 function updateBook(req, res){
-  return res.status(200).json({ok:true});
+  if(req.body._id) { delete req.body._id; }
+  Books.findById(req.params.bookid, function (err, book) {
+    if (err) { return handleError(res, err); }
+    if(!book) { return res.status(404).send('Not Found'); }
+    var updated = Object.assign(book, req.body);
+    console.log("updated",updated);
+    updated.save(function (err) {
+      if (err) { return handleError(res, err); }
+      return res.status(200).json(book);
+    });
+  });  
 }
 
 function handleError(res, err) {
@@ -105,7 +115,7 @@ var router = express.Router();
 
 router.get('/', getBook);
 router.post('/', addBook);
-router.put('/:book/:userId', updateBook);
+router.put('/:bookid', updateBook);
 router.delete('/:book', delBook);
 
 module.exports = router;
