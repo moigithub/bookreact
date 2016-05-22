@@ -6,6 +6,8 @@
 
 import React, {PropTypes, Component} from 'react';
 import ReactDOM from 'react-dom';
+import { Router, Route, Link, browserHistory, IndexRoute, Redirect} from 'react-router'
+
 import {createStore, combineReducers, applyMiddleware} from 'redux';
 // const Provider = require('react-redux').Provider
 import { Provider, connect } from 'react-redux'
@@ -131,6 +133,7 @@ function toggleBookRequest(book,userId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
+        console.log("toggle", book, userId);
         let imOnList = book.tradeRequest.indexOf(userId)>-1;
         var newBook;
         if(imOnList){
@@ -140,11 +143,11 @@ function toggleBookRequest(book,userId) {
             });
         } else {
             //add user to list
-            newBook= Object.assign({}, newBook, {
-                tradeRequest: [...newBook.tradeRequest, userId]
+            newBook= Object.assign({}, book, {
+                tradeRequest: [...book.tradeRequest, userId]
             });
         }
-
+console.log("after changes", newBook);
         /// http request
         var API_URL ="/api/books";
 
@@ -152,15 +155,17 @@ function toggleBookRequest(book,userId) {
         $.ajax({
             url:`${API_URL}/${book._id}`,
             type:"PUT",
-            data: newBook,
+            data: JSON.stringify(newBook),
+            contentType: "application/json; charset=utf-8",
             dataType: 'json',
+            processData :false,
             //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
-                console.log("data from put",data);
+                console.log("data from put",data, newBook);
                 // socket will add data to state
-                console.log("toogleBookRequest", book, userId);
-                dispatch({type:'UPDATE_BOOK', book: newBook});
+                //console.log("toogleBookRequest", book, userId);
+                dispatch({type:'UPDATE_BOOK', book: data});
                 
             })
             .fail(function(err){
@@ -264,13 +269,22 @@ class Book extends React.Component {
             <div className="book">
                 <img src={book.image|| defaultImg} className="bookImg"/>
                 <div className="bookName">{book.name}</div>
+                { book.owner === userId &&
                 <button onClick={onClose} className="closeBtn btn btn-danger btn-xs">
                     <span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button> 
+                }
                 
+                { book.owner !== userId &&
                 <button onClick={onTrade} className="tradeBtn">
-                    <span class="glyphicons glyphicons-iphone-transfer" aria-hidden="true">{requested?"cancel request":"Request"}</span>
+                    <span className="glyphicons glyphicons-iphone-transfer" aria-hidden="true">{requested?"cancel request":"Request"}</span>
                 </button> 
+                }
+                { book.owner === userId &&
+                <div className="reqPendant">
+                    <span className="glyphicons glyphicons-alarm" aria-hidden="true"></span>{book.tradeRequest.length} request
+                </div> 
+                }
             </div>
 
             );
@@ -362,4 +376,15 @@ export default class Root extends Component {
   }
 }
 
-ReactDOM.render(<Root/>, document.getElementById("app"));
+//ReactDOM.render(<Root/>, document.getElementById("app"));
+
+
+ReactDOM.render((
+  <Router history={browserHistory}>
+    <Route path="/" component={Root}>
+        <IndexRoute component={Root} />
+
+        <Redirect from="*" to="/" />
+    </Route>
+  </Router>
+), document.getElementById("app"));

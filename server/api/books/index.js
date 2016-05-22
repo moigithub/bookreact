@@ -92,9 +92,13 @@ function updateBook(req, res){
   Books.findById(req.params.bookid, function (err, book) {
     if (err) { return handleError(res, err); }
     if(!book) { return res.status(404).send('Not Found'); }
-    var updated = Object.assign(book, req.body);
-    console.log("updated",updated);
-    updated.save(function (err) {
+    
+    book.tradeRequest = req.body.tradeRequest || [];
+    console.log("updatebook req.body",req.body);
+    
+    //var updated = Object.assign(book, req.body);
+    console.log("updated",book);
+    book.save(function (err) {
       if (err) { return handleError(res, err); }
       return res.status(200).json(book);
     });

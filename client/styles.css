@@ -73,6 +73,7 @@ footer {
     display:block;
 }
 
+.book .reqPendant,
 .book .tradeBtn {
     position:absolute;
     bottom:0;
@@ -81,4 +82,13 @@ footer {
     text-align: center;
     z-index: 999;
     
+}
+
+.book .reqPendant{
+    background-color: #cb8e0a;
+    color: #eee;
+    opacity: .9;
+    display: block;
+    box-sizing: border-box;
+    padding: 3px;
 }

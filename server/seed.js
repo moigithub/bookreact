@@ -9,27 +9,27 @@ var Books = require('./api/books/books_model');
 Books.find({}).remove(function() {
   Books.create({
     owner:'1',
-    image: '',
-    isbn: '123456',
-    name: 'test',
+    image: "http://books.google.com/books/content?id=qy8BCwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    isbn: "9781612127385",
+    name: "Chai",
     tradeRequest: []
   }, {
     owner:'1',
-    image: '',
-    isbn: '234567',
-    name: 'otro book',
+    image: "http://books.google.com/books/content?id=t41tAqDHNKcC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    isbn: "9781442644038",
+    name: "Flux",
     tradeRequest: []
   }, {
     owner:'2',
-    image: '',
-    isbn: '747657',
-    name: 'javascript',
+    image: "http://books.google.com/books/content?id=_uTRAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    isbn: "9781118871652",
+    name: "JavaScript and JQuery",
     tradeRequest: []
   }, {
     owner:'2',
-    image: '',
-    isbn: '145356',
-    name: 'React and redux',
+    image:"http://books.google.com/books/content?id=NZCKCgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    isbn:"9781484212455",
+    name:"Introduction to React",
     tradeRequest: []
   }, function() {
       console.log('finished populating');
