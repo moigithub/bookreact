@@ -10,13 +10,25 @@
     </head>
     <body>
         <nav class="navbar navbar-default navbar-inverse">
-          <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">
-                    <span class="glyphicons glyphicons-book-open" aria-hidden="true"></span> <i class="fa fa-book" aria-hidden="true"></i></i></span> Transfer Books
-                </a>
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#topmenu" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">
+                  <span class="glyphicons glyphicons-book-open" aria-hidden="true"></span> <i class="fa fa-book" aria-hidden="true"></i></i></span> Transfer Books
+              </a>
             </div>
-          </div>
+            
+            <div class="collapse navbar-collapse" id="topmenu">
+              <ul class="nav navbar-nav">
+                  <li><a href="Books">All Books</a></li>
+                  <li><a href="MyBooks">My Books</a></li>
+              </ul>
+            </div>
+          
         </nav>        
         <div id="app" class="container"></div>
         

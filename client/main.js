@@ -226,7 +226,7 @@ class AddBookForm extends React.Component {
         
     render(){
         return (
-            <div className="col-xs-12 col-sm-6 col-md-4">
+            <div className="col-md-12">
                 <div className="panel panel-success">
                   <div className="panel-heading">
                     <h3 className="panel-title">Add new Book:</h3>
@@ -340,6 +340,55 @@ function mapStateToMyBooksProps(state) {
     }
 }
 var MyBookList = connect(mapStateToMyBooksProps,mapDispatchToProps)(_BookList);
+//////////////
+let Pendants = ({books, Accept, Decline})=>{
+    const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
+    return (
+        <div>
+            {
+                books.map(book=>{
+                return (
+                    <div className="book">
+                        <img src={book.image||defaultImg} className="bookImg"/>
+                        <div className="bookName">{book.name}</div>
+                        {book.tradeRequest.map(request=><Request user={request}
+                                                            onAccept={()=>Accept(request)}
+                                                            onDecline={()=>Decline(request)}
+                                                         />)}
+                    </div>
+                );
+            })
+                
+            }
+        </div>
+        );
+    };
+
+function mapDispatchPendantsToProps(dispatch){
+    return {
+        Accept:(user)=>{
+            // set owner to new user and clear tradeRequest array
+            console.log("accept ", user);
+        },
+        Decline:(user)=>{
+            // remove user from tradeRequest Array
+            console.log("decline ", user);
+        }
+    }
+}
+Pendants = connect(mapDispatchPendantsToProps)(Pendants)
+///////////////
+const MyBooksWithRequest =()=>(
+    <div>
+        <div className="col-sm-6">
+            <MyBookList />
+        </div>
+        <div className="col-sm-6">
+            list of pendants, for each book
+            <Pendants />
+        </div>
+    </div>
+)
 
 ///////////
 class Main extends React.Component {
@@ -362,7 +411,7 @@ class Main extends React.Component {
         
         return (
             
-            <div>
+            <div className="row">
                 {this.props.children }
             </div>
             );
@@ -392,8 +441,8 @@ ReactDOM.render((
     <Route path="/" component={Main}>
         <IndexRoute component={BookList} />
 
-        <Route path="/Books" component={BookList}></Route>
-        <Route path="/MyBooks" component={MyBookList}></Route>
+        <Route path="Books" component={BookList}></Route>
+        <Route path="MyBooks" component={MyBooksWithRequest}></Route>
 
     
         <Redirect from="*" to="/" />
