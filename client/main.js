@@ -64,7 +64,7 @@ const handleUser =(state=null, action)=>{   //user {userid:'1', name:'sfsf'}
 
 ///// STORE ///
 import thunk from 'redux-thunk';
-const initialState = [];
+const initialState = {books:[],user:{}};
 const createStoreWithThunk = applyMiddleware(thunk)(createStore);
 const allReducers = combineReducers({books:handleBooks,user:handleUser});
 const bookStore = createStoreWithThunk(allReducers, initialState);
@@ -301,10 +301,13 @@ class _BookList extends React.Component {
         console.log("books",this.props);
         const userId =user&&user.userId ? user.userId : null;
         return(
-            <div class="bookList">
-                {books.map((book,i)=>(
-                    <Book key={i} book={book} userId={userId} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, userId)}/>
-                ))}
+            <div className="row">
+                <AddBookForm />
+                <div class="bookList">
+                    {books.map((book,i)=>(
+                        <Book key={i} book={book} userId={userId} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, userId)}/>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -328,11 +331,20 @@ function mapStateToProps(state) {
 }
 var BookList = connect(mapStateToProps,mapDispatchToProps)(_BookList);
 
+////////
+function mapStateToMyBooksProps(state) {
+    //console.log("mapstatetoprops store",state);
+    return {
+        books:state.books.filter(book=>book.owner==state.user.userId),
+        user:state.user
+    }
+}
+var MyBookList = connect(mapStateToMyBooksProps,mapDispatchToProps)(_BookList);
 
+///////////
 class Main extends React.Component {
     constructor(props){
         super(props);
-
     }
     
     componentDidMount(){
@@ -351,13 +363,7 @@ class Main extends React.Component {
         return (
             
             <div>
-                <div id="bookList">
-                    <div className="row">
-                        <AddBookForm />
-                        <BookList />
-
-                    </div>
-                </div>
+                {this.props.children }
             </div>
             );
     }
@@ -366,6 +372,7 @@ Main.contextTypes={
     store: React.PropTypes.object
 };
 
+/*
 export default class Root extends Component {
   render() {
     return (
@@ -375,16 +382,22 @@ export default class Root extends Component {
     )
   }
 }
-
+*/
 //ReactDOM.render(<Root/>, document.getElementById("app"));
 
 
 ReactDOM.render((
+<Provider store={bookStore}>
   <Router history={browserHistory}>
-    <Route path="/" component={Root}>
-        <IndexRoute component={Root} />
+    <Route path="/" component={Main}>
+        <IndexRoute component={BookList} />
 
+        <Route path="/Books" component={BookList}></Route>
+        <Route path="/MyBooks" component={MyBookList}></Route>
+
+    
         <Redirect from="*" to="/" />
     </Route>
   </Router>
+</Provider>  
 ), document.getElementById("app"));
