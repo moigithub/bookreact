@@ -238,7 +238,7 @@ class AddBookForm extends React.Component {
                               <input type="text" ref="book" placeholder="Enter book name here" className="form-control" />
                               <span className="input-group-btn">
                                 <button type="submit" className="btn btn-lg btn-success">
-                                    <span className="glyphicon glyphicon glyphicon-ok-sign" aria-hidden="true"></span> Add
+                                    <span className="glyphicon glyphicon-ok-sign" aria-hidden="true"></span> Add
                                 </button> 
                               </span>
                             </div>
@@ -340,25 +340,43 @@ function mapStateToMyBooksProps(state) {
     }
 }
 var MyBookList = connect(mapStateToMyBooksProps,mapDispatchToProps)(_BookList);
+////////
+const Request =({user, onAccept, onDecline})=>(
+    <li className="request list-group-item">
+        <span>{user}</span>
+        <div className="btn-group pull-right" role="group">
+            <button className="btn btn-xs btn-info" onClick={onAccept}><span className="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+            <button className="btn btn-xs btn-danger" onClick={onDecline}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+        </div>
+    </li>
+    );
 //////////////
-let Pendants = ({books, Accept, Decline})=>{
+let Pendants = ({books, Accept, Decline, DeclineAll})=>{
     const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
     return (
-        <div>
+        <div className="row">
             {
-                books.map(book=>{
-                return (
-                    <div className="book">
-                        <img src={book.image||defaultImg} className="bookImg"/>
-                        <div className="bookName">{book.name}</div>
-                        {book.tradeRequest.map(request=><Request user={request}
-                                                            onAccept={()=>Accept(request)}
-                                                            onDecline={()=>Decline(request)}
-                                                         />)}
-                    </div>
-                );
-            })
-                
+                books.map((book,k)=>{
+                    if(book.tradeRequest.length>0){
+                    return (
+                        <div className="requestList" key={k}>
+                            <img src={book.image||defaultImg} className="bookImg col-sm-4"/>
+                            <div className="col-sm-8">
+                                <h2 className="bookName">{book.name}</h2>
+                                <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll()}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
+                                <ul className="list-group">
+                                {book.tradeRequest.map((request,i)=><Request key={i} user={request}
+                                                                    onAccept={()=>Accept(request)}
+                                                                    onDecline={()=>Decline(request)}
+                                                                 />)}
+                                </ul>
+                            </div>
+                        </div>
+                        );
+                    }
+                    return null;
+                })
+
             }
         </div>
         );
@@ -368,15 +386,17 @@ function mapDispatchPendantsToProps(dispatch){
     return {
         Accept:(user)=>{
             // set owner to new user and clear tradeRequest array
+            //dispatch some action
             console.log("accept ", user);
         },
         Decline:(user)=>{
             // remove user from tradeRequest Array
+            //dispatch some action
             console.log("decline ", user);
         }
     }
 }
-Pendants = connect(mapDispatchPendantsToProps)(Pendants)
+Pendants = connect(mapStateToMyBooksProps, mapDispatchPendantsToProps)(Pendants)
 ///////////////
 const MyBooksWithRequest =()=>(
     <div>
