@@ -301,14 +301,11 @@ class _BookList extends React.Component {
         console.log("books",this.props);
         const userId =user&&user.userId ? user.userId : null;
         return(
-            <div className="row">
-                <AddBookForm />
                 <div class="bookList">
                     {books.map((book,i)=>(
                         <Book key={i} book={book} userId={userId} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, userId)}/>
                     ))}
                 </div>
-            </div>
         );
     }
 }
@@ -346,6 +343,7 @@ const Request =({user, onAccept, onDecline})=>(
         <span>{user}</span>
         <div className="btn-group pull-right" role="group">
             <button className="btn btn-xs btn-info" onClick={onAccept}><span className="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+            &nbsp;
             <button className="btn btn-xs btn-danger" onClick={onDecline}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
         </div>
     </li>
@@ -360,9 +358,11 @@ let Pendants = ({books, Accept, Decline, DeclineAll})=>{
                     if(book.tradeRequest.length>0){
                     return (
                         <div className="requestList" key={k}>
-                            <img src={book.image||defaultImg} className="bookImg col-sm-4"/>
-                            <div className="col-sm-8">
-                                <h2 className="bookName">{book.name}</h2>
+                            <div className="col-xs-4">
+                                <img src={book.image||defaultImg} className="bookImg img-responsive"/>
+                                <p className="bookName">{book.name}</p>
+                            </div>
+                            <div className="col-xs-8">
                                 <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll()}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
                                 <ul className="list-group">
                                 {book.tradeRequest.map((request,i)=><Request key={i} user={request}
@@ -399,12 +399,15 @@ function mapDispatchPendantsToProps(dispatch){
 Pendants = connect(mapStateToMyBooksProps, mapDispatchPendantsToProps)(Pendants)
 ///////////////
 const MyBooksWithRequest =()=>(
-    <div>
-        <div className="col-sm-6">
-            <MyBookList />
+    <div className="row">
+        <div className="col-sm-9">
+            <div className="row">
+                <AddBookForm />
+                <MyBookList />
+            </div>
         </div>
-        <div className="col-sm-6">
-            list of pendants, for each book
+        <div className="col-sm-3 pendantList">
+            <h3>List of pendant requests</h3>
             <Pendants />
         </div>
     </div>
@@ -431,7 +434,7 @@ class Main extends React.Component {
         
         return (
             
-            <div className="row">
+            <div >
                 {this.props.children }
             </div>
             );

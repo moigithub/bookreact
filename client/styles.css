@@ -92,3 +92,11 @@ footer {
     box-sizing: border-box;
     padding: 3px;
 }
+
+.bookName {
+    font-size: 0.9em;
+}
+
+.pendantList {
+    background-color: #444;
+}
