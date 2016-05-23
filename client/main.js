@@ -281,6 +281,43 @@ function declineRequest(book,userId) {
     }
 
 }
+
+function declineAllRequest(book,userId) {
+    return function(dispatch){
+        //change the book tradeRequest
+        //remove user from list
+        console.log("newOwner", book, userId);
+        var newBook= Object.assign({}, book, {
+                tradeRequest : []
+            });
+
+        /// http request
+        var API_URL ="/api/books";
+
+//        $.post(API_URL,{"book":book._id},null, "json")
+        $.ajax({
+            url:`${API_URL}/${book._id}`,
+            type:"PUT",
+            data: JSON.stringify(newBook),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            processData :false,
+            //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
+        })
+            .done(function(data){
+                console.log("data from put",data, newBook);
+                // socket will add data to state
+                //console.log("toogleBookRequest", book, userId);
+                dispatch({type:'UPDATE_BOOK', book: data});
+                
+            })
+            .fail(function(err){
+                console.error("error",err);
+                //alert(err.responseText);
+            });
+    }
+
+}
 ///////END ACTION CREATOR//////////
 
 /////////////////
@@ -440,7 +477,7 @@ let Pendants = ({books, Accept, Decline, DeclineAll})=>{
                                 <p className="bookName">{book.name}</p>
                             </div>
                             <div className="col-xs-8">
-                                <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll()}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
+                                <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll(book)}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
                                 <ul className="list-group">
                                 {book.tradeRequest.map((userId,i)=><Request key={i} user={userId}
                                                                     onAccept={()=>Accept(book,userId)}
@@ -472,7 +509,14 @@ function mapDispatchPendantsToProps(dispatch){
             //dispatch some action
             console.log("decline ", book,newOwner);
             dispatch(declineRequest(book, newOwner));
+        },
+        DeclineAll:(book)=>{
+            // remove user from tradeRequest Array
+            //dispatch some action
+            console.log("decline ", book);
+            dispatch(declineAllRequest(book));
         }
+
     }
 }
 Pendants = connect(mapStateToMyBooksProps, mapDispatchPendantsToProps)(Pendants)
