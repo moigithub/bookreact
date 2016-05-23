@@ -97,8 +97,8 @@ function getServerData() {
                 dispatch({type: 'SERVER_DATA', book:data})
             })
             .fail(function(err){
-                console.log("error",err);
-                alert(err.responseText);
+                console.error("error",err);
+                //alert(err.responseText);
             });
     }
 }
@@ -122,8 +122,8 @@ function addBook(bookName) {
                 dispatch({type: 'ADD_BOOK', book:data})
             })
             .fail(function(err){
-                console.log("error",err);
-                alert(err.responseText);
+                console.error("error",err);
+                //alert(err.responseText);
             });
     }
 
@@ -169,12 +169,13 @@ console.log("after changes", newBook);
                 
             })
             .fail(function(err){
-                console.log("error",err);
-                alert(err.responseText);
+                console.error("error",err);
+                //alert(err.responseText);
             });
     }
 
 }
+
 
 function removeBook(book) {
 /*    
@@ -198,11 +199,87 @@ function removeBook(book) {
                 dispatch({type: 'REMOVE_BOOK', book:book})
             })
             .fail(function(err){
-                console.log("error",err);
-                alert(err.responseText);
+                console.error("error",err);
+                //alert(err.responseText);
             });
     }
   
+}
+
+function setNewOwner(book,userId) {
+    return function(dispatch){
+        //change the book tradeRequest
+        //remove user from list
+        console.log("newOwner", book, userId);
+        var newBook= Object.assign({}, book, {
+            owner: userId,
+            tradeRequest: []
+        });
+
+        /// http request
+        var API_URL ="/api/books";
+
+//        $.post(API_URL,{"book":book._id},null, "json")
+        $.ajax({
+            url:`${API_URL}/${book._id}`,
+            type:"PUT",
+            data: JSON.stringify(newBook),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            processData :false,
+            //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
+        })
+            .done(function(data){
+                console.log("data from put",data, newBook);
+                // socket will add data to state
+                //console.log("toogleBookRequest", book, userId);
+                dispatch({type:'UPDATE_BOOK', book: data});
+                
+            })
+            .fail(function(err){
+                console.error("error",err);
+                //alert(err.responseText);
+            });
+    }
+
+}
+
+
+function declineRequest(book,userId) {
+    return function(dispatch){
+        //change the book tradeRequest
+        //remove user from list
+        console.log("newOwner", book, userId);
+        var newBook= Object.assign({}, book, {
+                tradeRequest : book.tradeRequest.filter(function(user){user != userId})
+            });
+
+        /// http request
+        var API_URL ="/api/books";
+
+//        $.post(API_URL,{"book":book._id},null, "json")
+        $.ajax({
+            url:`${API_URL}/${book._id}`,
+            type:"PUT",
+            data: JSON.stringify(newBook),
+            contentType: "application/json; charset=utf-8",
+            dataType: 'json',
+            processData :false,
+            //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
+        })
+            .done(function(data){
+                console.log("data from put",data, newBook);
+                // socket will add data to state
+                //console.log("toogleBookRequest", book, userId);
+                dispatch({type:'UPDATE_BOOK', book: data});
+                
+            })
+            .fail(function(err){
+                console.error("error",err);
+                //alert(err.responseText);
+            });
+    }
+
 }
 ///////END ACTION CREATOR//////////
 
@@ -365,9 +442,9 @@ let Pendants = ({books, Accept, Decline, DeclineAll})=>{
                             <div className="col-xs-8">
                                 <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll()}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
                                 <ul className="list-group">
-                                {book.tradeRequest.map((request,i)=><Request key={i} user={request}
-                                                                    onAccept={()=>Accept(request)}
-                                                                    onDecline={()=>Decline(request)}
+                                {book.tradeRequest.map((userId,i)=><Request key={i} user={userId}
+                                                                    onAccept={()=>Accept(book,userId)}
+                                                                    onDecline={()=>Decline(book,userId)}
                                                                  />)}
                                 </ul>
                             </div>
@@ -384,15 +461,17 @@ let Pendants = ({books, Accept, Decline, DeclineAll})=>{
 
 function mapDispatchPendantsToProps(dispatch){
     return {
-        Accept:(user)=>{
+        Accept:(book,newOwner)=>{
             // set owner to new user and clear tradeRequest array
             //dispatch some action
-            console.log("accept ", user);
+            console.log("accept ", book, newOwner);
+            dispatch(setNewOwner(book, newOwner));
         },
-        Decline:(user)=>{
+        Decline:(book,newOwner)=>{
             // remove user from tradeRequest Array
             //dispatch some action
-            console.log("decline ", user);
+            console.log("decline ", book,newOwner);
+            dispatch(declineRequest(book, newOwner));
         }
     }
 }
