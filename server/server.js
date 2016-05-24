@@ -120,6 +120,16 @@ var User = require('./api/users/user_model');
 app.use(passport.initialize());
 app.use(passport.session());
 
+passport.serializeUser(function(user, done) {
+  done(null, user._id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
 passport.use('local-signup', new LocalStrategy({
   usernameField: 'email',
   passwordField: 'password',
@@ -231,13 +241,8 @@ app.route('/:url(api|auth|components)/*').get(function(req,res){
 
 */
 
-app.get('/',function(req,res){
-//  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
-  res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')})
-});
-
 app.get('/login', function(req,res){
-    res.render('login.ejs', { message: req.flash('loginMessage')})
+    res.render('login.ejs', { message: req.flash('loginMessage') });
 });
 
 app.get('/signup', function(req, res) {
@@ -264,6 +269,13 @@ app.get('/logout', function(req,res){
   res.redirect("/");
 });
 
+app.get('/',function(req,res){
+//  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
+console.log("user", req.user);
+  res.render('index.ejs', {user: req.user, message: req.flash('loginMessage'), userId:"test"});
+});
+
+
 //check if is logged middleware
 function isLoggedIn(req,res,next){
   if(req.isAuthenticated()){
@@ -279,6 +291,12 @@ app.route('*').get(function(req,res){
   res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')})
 });
 
+
+/*
+app.use(function(req, res){
+   res.sendStatus(404);
+});
+*/
 
 var server = http.createServer(app);
 var io = require('socket.io')(server);

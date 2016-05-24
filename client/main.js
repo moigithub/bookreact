@@ -80,8 +80,8 @@ const stockStore = createStore(
 */
 /// FIN STORE ////
 ////////ACTION CREATOR//////
-function setUser(){
-    return {type:'SET_USER',user: {userId:'1', name:'test'}};
+function setUser(uid){
+    return {type:'SET_USER',user: {userId:uid}};
 }
 
 
@@ -546,8 +546,8 @@ class Main extends React.Component {
     componentDidMount(){
         //get initial data from server
         this.context.store.dispatch(getServerData());
-        
-        this.context.store.dispatch(setUser());
+        console.log(window.uid);
+        this.context.store.dispatch(setUser(window.uid));
         console.log("state",this.context.store.getState());
     }
     
@@ -555,10 +555,11 @@ class Main extends React.Component {
         
         ////////.
         //const state = this.context.store.getState();
-        
+        console.log("userid",this.context.store.getState());
         return (
             
             <div >
+                <p></p>
                 {this.props.children }
             </div>
             );
@@ -592,7 +593,6 @@ ReactDOM.render((
         <Route path="MyBooks" component={MyBooksWithRequest}></Route>
 
     
-        <Redirect from="*" to="/" />
     </Route>
   </Router>
 </Provider>  
