@@ -13,6 +13,7 @@ import {createStore, combineReducers, applyMiddleware} from 'redux';
 import { Provider, connect } from 'react-redux'
 
 
+
 //require('es6-promise').polyfill();
 //import fetch from 'isomorphic-fetch'
 

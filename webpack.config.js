@@ -12,7 +12,7 @@ var entries = isDev ? [
     'webpack-hot-middleware/client?reload=true&path=/__webpack_hmr&timeout=20000',
 //    "webpack/hot/dev-server",
      'webpack/hot/only-dev-server', // "only" prevents reload on syntax errors
-     "./client/index.html",      
+//     "./client/index.html",      
     ] : [];
 
     
@@ -53,6 +53,7 @@ module.exports = {
               presets: ['es2015', 'react', 'stage-0' ]  .concat(isDev?['react-hmre']:[])
             },
         },
+        { test: /\.ejs$/, loader: "ejs-loader?variable=data" },
         {
           test: /\.html$/,
           loader: "file?name=[name].[ext]",
@@ -98,6 +99,11 @@ module.exports = {
     ],
     resolve: {
         // you can now require('file') instead of require('file.coffee')
-        extensions: ['', '.js', '.json', '.coffee'] 
-    }
+        extensions: ['', '.js', '.json', '.coffee','ejs'] 
+    },
+    node: {
+      net: 'empty',
+      tls: 'empty',
+      dns: 'empty'
+  }
 }

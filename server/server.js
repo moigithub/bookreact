@@ -17,8 +17,7 @@ var session = require('express-session');
 var mongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var jwt = require('jsonwebtoken');
-
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
 //var TwitterStrategy = require("passport-twitter").Strategy;
 var flash = require('connect-flash');
@@ -84,10 +83,10 @@ mongoose.connection.on('error', function(err){
 });
 
 /////////////////
-//var viewpath = path.resolve(path.join(__dirname,".."), 'client/view');
+var viewpath = path.resolve(path.join(__dirname,".."), 'client/views');
 //console.log("viewpath",viewpath);
-//app.set('views', viewpath);
-//app.set('view engine', 'ejs');
+app.set('views', viewpath);
+app.set('view engine', 'ejs');
 //app.set('view engine', 'html');
 
 // middlewares
@@ -116,7 +115,7 @@ app.use(methodOverride());
 app.use(morgan('dev'));
 
 /////////////////////////////////////////////////// user model
-var User = require('./users/user_model');
+var User = require('./api/users/user_model');
 /// passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -131,7 +130,7 @@ passport.use('local-signup', new LocalStrategy({
   process.nextTick(function(){
     User.findOne({'email': email}, function(err, user){
       if(err) return done(err);
-      if(user) return done(null, false, req.flash('SingInMessage','e-Mail already in use.'));
+      if(user) return done(null, false, req.flash('signupMessage','e-Mail already in use.'));
       
       var newUser = new User();
       newUser.email = email;
@@ -154,9 +153,9 @@ passport.use('local-login', new LocalStrategy({
 }, function(req, email, password, done){
     User.findOne({'email': email}, function(err, user){
       if(err) return done(err);
-      if(!user) return done(null, false, req.flash('LoginInMessage','wrong user/password'));
+      if(!user) return done(null, false, req.flash('loginMessage','wrong user/password'));
       
-      if(!user.validPassword(password)) return done(null, false, req.flash('LoginInMessage','wrong user/password'));
+      if(!user.validPassword(password)) return done(null, false, req.flash('loginMessage','wrong user/password'));
       
       return done(null, user);
     });
@@ -232,11 +231,52 @@ app.route('/:url(api|auth|components)/*').get(function(req,res){
 
 */
 
+app.get('/',function(req,res){
+//  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
+  res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')})
+});
+
+app.get('/login', function(req,res){
+    res.render('login.ejs', { message: req.flash('loginMessage')})
+});
+
+app.get('/signup', function(req, res) {
+    // render the page and pass in any flash data if it exists
+    res.render('signup.ejs', { message: req.flash('signupMessage') });
+});
+    
+app.post('/login', passport.authenticate('local-login', {
+    successRedirect : '/books', // redirect to the secure profile section
+    failureRedirect : '/login', // redirect back to the signup page if there is an error
+    failureFlash : true // allow flash messages
+}));
+
+// process the signup form
+app.post('/signup', passport.authenticate('local-signup', {
+    successRedirect : '/books', // redirect to the secure profile section
+    failureRedirect : '/signup', // redirect back to the signup page if there is an error
+    failureFlash : true // allow flash messages
+}));
+  
+
+app.get('/logout', function(req,res){
+  req.logout();
+  res.redirect("/");
+});
+
+//check if is logged middleware
+function isLoggedIn(req,res,next){
+  if(req.isAuthenticated()){
+    return next();
+  }
+  res.redirect("/");
+}
 //all others resources should redirect to the index.html
 
 
 app.route('*').get(function(req,res){
-  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
+//  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
+  res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')})
 });
 
 
