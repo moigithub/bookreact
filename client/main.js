@@ -210,7 +210,7 @@ function setNewOwner(book,userId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("newOwner", book, userId);
+        console.log("setNewOwner", book, userId);
         var newBook= Object.assign({}, book, {
             owner: userId,
             tradeRequest: []
@@ -249,9 +249,9 @@ function declineRequest(book,userId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("newOwner", book, userId);
+        console.log("declineRequest", book, userId);
         var newBook= Object.assign({}, book, {
-                tradeRequest : book.tradeRequest.filter(function(user){user != userId})
+                tradeRequest : book.tradeRequest.filter(user=>user != userId)
             });
 
         /// http request
@@ -282,11 +282,11 @@ function declineRequest(book,userId) {
 
 }
 
-function declineAllRequest(book,userId) {
+function declineAllRequest(book) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("newOwner", book, userId);
+        console.log("declineAllRequest", book);
         var newBook= Object.assign({}, book, {
                 tradeRequest : []
             });
@@ -513,7 +513,7 @@ function mapDispatchPendantsToProps(dispatch){
         DeclineAll:(book)=>{
             // remove user from tradeRequest Array
             //dispatch some action
-            console.log("decline ", book);
+            console.log("declineAll ", book);
             dispatch(declineAllRequest(book));
         }
 

@@ -94,6 +94,7 @@ function updateBook(req, res){
     if(!book) { return res.status(404).send('Not Found'); }
     
     book.tradeRequest = req.body.tradeRequest || [];
+    book.owner = req.body.owner;
     console.log("updatebook req.body",req.body);
     
     //var updated = Object.assign(book, req.body);
