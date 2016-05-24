@@ -13,9 +13,13 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 
 var mongoose = require('mongoose');
-//var session = require('express-session');
-//var mongoStore = require('connect-mongo')(session);
-//var passport = require('passport');
+var session = require('express-session');
+var mongoStore = require('connect-mongo')(session);
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var jwt = require('jsonwebtoken');
+
+
 //var TwitterStrategy = require("passport-twitter").Strategy;
 var flash = require('connect-flash');
 //var ejs = require('ejs');
@@ -93,14 +97,14 @@ app.use(express.static(path.resolve(path.join(__dirname,".."), 'public'))); // t
 app.use(favicon(__dirname+'/../public/favicon.ico'));
 
 
-/*
+
 app.use(session({
   secret: config.secret,
   resave: true,
   saveUninitialized: true,
   store: new mongoStore({mongooseConnection: mongoose.connection, db: 'nightreact'})
 }));
-*/
+
 
 
 //form process
@@ -111,10 +115,55 @@ app.use(methodOverride());
 // request logger
 app.use(morgan('dev'));
 
+/////////////////////////////////////////////////// user model
+var User = require('./users/user_model');
+/// passport
+app.use(passport.initialize());
+app.use(passport.session());
 
+passport.use('local-signup', new LocalStrategy({
+  usernameField: 'email',
+  passwordField: 'password',
+  passReqToCallback: true
+}, function(req, email, password, done){
+  //async
+  // User.findOne wont fire unless data is sent back
+  process.nextTick(function(){
+    User.findOne({'email': email}, function(err, user){
+      if(err) return done(err);
+      if(user) return done(null, false, req.flash('SingInMessage','e-Mail already in use.'));
+      
+      var newUser = new User();
+      newUser.email = email;
+      newUser.password = newUser.generateHash(password);
+      
+      newUser.save(function(err){
+        if(err) throw err;
+        
+        return done(null, newUser);
+      });
+    });
+  });
+}));
+
+
+passport.use('local-login', new LocalStrategy({
+  usernameField: 'email',
+  passwordField: 'password',
+  passReqToCallback: true
+}, function(req, email, password, done){
+    User.findOne({'email': email}, function(err, user){
+      if(err) return done(err);
+      if(!user) return done(null, false, req.flash('LoginInMessage','wrong user/password'));
+      
+      if(!user.validPassword(password)) return done(null, false, req.flash('LoginInMessage','wrong user/password'));
+      
+      return done(null, user);
+    });
+  
+}));
 /*
 
-/// passport
 passport.use(new TwitterStrategy({
     consumerKey: process.env.TWITTER_CONSUMER_KEY,
     consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
@@ -133,8 +182,6 @@ passport.deserializeUser(function(obj, cb) {
   cb(null, obj);
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
 
 // middleware to send user info/status
 app.use(function(req, res, next) {
