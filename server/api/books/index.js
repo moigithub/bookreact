@@ -27,7 +27,7 @@ console.log("book name",bookName);
           //bookData= JSON.parse(bookData);
 
           var data = {
-            owner:'1',   //req.body.userId
+            owner: req.body.userId,
             image: bookData.items[0].volumeInfo.imageLinks?bookData.items[0].volumeInfo.imageLinks.thumbnail: "", 
             isbn: bookData.items[0].volumeInfo.industryIdentifiers[0].identifier || "",
             name: bookData.items[0].volumeInfo.title || "",

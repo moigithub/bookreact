@@ -48,15 +48,15 @@
             <p> a <a href="https://www.freecodecamp.com/" target="_blank">FCC</a> basejump exercise by <a href="https://www.freecodecamp.com/moigithub" target="_blank">@MMan</a></p>
             <p>Powered by <a href="https://developers.google.com/books/docs/overview">Google Books API</a></p>
         </footer>
-        <button onclick="test()">click me</button>
+        
     </body>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/bundle.js"></script>
     <script type='text/javascript'>
-      window.uid="<% if (user) {%><%= user._id %><%}%>";
-      alert(window.uid);
+      window.__uid="<% if (user) {%><%= user._id %><%}%>";
+      //alert(window.uid);
     </script>
+    <script src="/bundle.js"></script>
 </html>

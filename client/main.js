@@ -63,22 +63,6 @@ const handleUser =(state=null, action)=>{   //user {userid:'1', name:'sfsf'}
 };
 ////FIN REDUCER ///
 
-///// STORE ///
-import thunk from 'redux-thunk';
-const initialState = {books:[],user:{}};
-const createStoreWithThunk = applyMiddleware(thunk)(createStore);
-const allReducers = combineReducers({books:handleBooks,user:handleUser});
-const bookStore = createStoreWithThunk(allReducers, initialState);
-/*
-const stockStore = createStore(
-  handleStocks,
-  initialState,
-  applyMiddleware(
-    thunk // lets us dispatch() functions
-  )
-)
-*/
-/// FIN STORE ////
 ////////ACTION CREATOR//////
 function setUser(uid){
     return {type:'SET_USER',user: {userId:uid}};
@@ -104,7 +88,7 @@ function getServerData() {
     }
 }
 
-function addBook(bookName) {
+function addBook(bookName, userId) {
 /*
   return {
     type: 'ADD_STOCK_SYMBOL',
@@ -116,7 +100,7 @@ function addBook(bookName) {
         /// http request
         var API_URL ="/api/books";
 
-        $.post(API_URL,{"book":bookName},null, "json")
+        $.post(API_URL,{"book":bookName, "userId": userId},null, "json")
             .done(function(data){
                 //console.log("data",data);
                 // socket will add data to state
@@ -335,7 +319,7 @@ class AddBookForm extends React.Component {
         const {store} = this.context;
         e.preventDefault();
         var book = this.refs.book.value;
-        store.dispatch(addBook(book));
+        store.dispatch(addBook(book, store.getState().user.userId));
         this.refs.book.value='';
     }
         
@@ -547,7 +531,7 @@ class Main extends React.Component {
         //get initial data from server
         this.context.store.dispatch(getServerData());
         console.log(window.uid);
-        this.context.store.dispatch(setUser(window.uid));
+        //this.context.store.dispatch(setUser(window.uid));
         console.log("state",this.context.store.getState());
     }
     
@@ -581,6 +565,25 @@ export default class Root extends Component {
 }
 */
 //ReactDOM.render(<Root/>, document.getElementById("app"));
+
+
+///// STORE ///
+import thunk from 'redux-thunk';
+console.log("window.uid", window.__uid);
+const initialState = {books:[],user:{userId:window.__uid}};
+const createStoreWithThunk = applyMiddleware(thunk)(createStore);
+const allReducers = combineReducers({books:handleBooks,user:handleUser});
+const bookStore = createStoreWithThunk(allReducers, initialState);
+/*
+const stockStore = createStore(
+  handleStocks,
+  initialState,
+  applyMiddleware(
+    thunk // lets us dispatch() functions
+  )
+)
+*/
+/// FIN STORE ////
 
 
 ReactDOM.render((
