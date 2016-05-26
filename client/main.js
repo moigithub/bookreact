@@ -483,12 +483,12 @@ const Request =({whoWantBookId, onAccept, onDecline})=>(
 let Pendants = ({books,user, Accept, Decline, DeclineAll})=>{
     const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
     return (
-        <div className="row">
+        <div className="requestList">
             {
                 books.map((book,k)=>{
                     if(book.tradeRequest.length>0){
                     return (
-                        <div className="requestList" key={k}>
+                        <div className="row" key={k}>
                             <div className="col-xs-4">
                                 <img src={book.image||defaultImg} className="bookImg img-responsive"/>
                                 <p className="bookName">{book.name}</p>
@@ -540,13 +540,13 @@ Pendants = connect(mapStateToMyBooksProps, mapDispatchPendantsToProps)(Pendants)
 ///////////////
 const MyBooksWithRequest =()=>(
     <div className="row">
-        <div className="col-sm-9">
+        <div className="col-sm-8">
             <div className="row">
                 <AddBookForm />
                 <MyBookList />
             </div>
         </div>
-        <div className="col-sm-3 pendantList">
+        <div className="col-sm-4 pendantList">
             <h3>List of pendant requests</h3>
             <Pendants />
         </div>
