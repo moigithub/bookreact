@@ -79,7 +79,8 @@ function delBook(req, res){
 }//delete book
 
 function getBook(req, res){
-  Books.find({},function(err,books){
+  // populate with user data
+  Books.find({}).populate('owner').exec(function(err,books){
     if(err){ return handleError(res,err);}
     //console.log("all books",books);
     return res.status(200).json(books);

@@ -212,11 +212,11 @@ app.post('/login', passport.authenticate('local-login', {
 }));
 
 
+const midwares = require('./midwares');
 app.get('/settings', midwares.isLoggedIn, function(req,res){
     res.render('settings.ejs', {user: req.user, message: req.flash('settingsMessage') });
 });
 
-const midwares = require('./midwares');
 app.post('/settings', midwares.isLoggedIn, midwares.checkToken, function(req,res){
   console.log(req.body);
   User.findById(req.body._id, function(err,user){

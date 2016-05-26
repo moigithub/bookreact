@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var BookSchema = new Schema({
-    owner: String,//{type: Schema.ObjectId}, // user input.. chicago, san francisco, texas
+    owner: {type: Schema.ObjectId ,ref:'User'}, // user input.. chicago, san francisco, texas
     image: String,  // which bar from barlist
     isbn: String,
     name: String,

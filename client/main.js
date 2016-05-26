@@ -488,7 +488,7 @@ let Pendants = ({books,user, Accept, Decline, DeclineAll})=>{
                 books.map((book,k)=>{
                     if(book.tradeRequest.length>0){
                     return (
-                        <div className="row" key={k}>
+                        <div className="row pendants" key={k}>
                             <div className="col-xs-4">
                                 <img src={book.image||defaultImg} className="bookImg img-responsive"/>
                                 <p className="bookName">{book.name}</p>
@@ -547,7 +547,7 @@ const MyBooksWithRequest =()=>(
             </div>
         </div>
         <div className="col-sm-4 pendantList">
-            <h3>List of pendant requests</h3>
+            <h3 className="text-center">List of pendant requests</h3>
             <Pendants />
         </div>
     </div>

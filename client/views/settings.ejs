@@ -31,6 +31,7 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li><p class="navbar-text"><span>Welcome</span> <%=  user.fullName ? user.fullName : user.email  %></p></li>
+                    <li><a href="/settings"><span class="glyphicons glyphicons-settings"></span> Settings</a></li>
                     <li><a href="/logout">Logout</a></li>
                 </ul>
               <% } else { %>  
