@@ -1,6 +1,7 @@
 'use strict';
 var Books = require('./books_model');
 var BookAPI = require('./bookAPI');
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 /////////////////////
 
 
@@ -8,11 +9,11 @@ var BookAPI = require('./bookAPI');
 // else create a new one
 
 function addBook(req, res){
-  
+console.log("addBook api",req.body)
   var bookName=req.body.book;
   if(!bookName) {return handleError(res, "Missing book name.")}
   
-console.log("book name",bookName);
+//console.log("book name",bookName, "token decoded", req.decoded);
 
 
   Books.findOne({name: bookName}, function(err, book){
@@ -114,13 +115,39 @@ function handleError(res, err) {
 
 
 
+// check JWT middleware
+// it will afffect all below THIS line routes
+function checkToken(req, res, next) {
+  var token = req.headers['authorization'];
+  console.log("headers",req.headers);
+  if(token){
+    console.log("no token");
+    jwt.verify(token, 'sekretJWT', function(err, decoded){
+      if(err) return res.json({message:'auth failed.'})
+      
+      req.decoded = decoded;
+      return next();
+    })
+  } else {
+    return res.status(403).send({message:'Access not allowed.'});
+  }
+};
+
+//check if is logged middleware
+function isLoggedIn(req,res,next){
+  if(req.isAuthenticated()){
+    return next();
+  }
+  res.redirect("/");
+}
+
 
 var express = require('express');
 var router = express.Router();
 
 router.get('/', getBook);
-router.post('/', addBook);
-router.put('/:bookid', updateBook);
-router.delete('/:book', delBook);
+router.post('/', isLoggedIn, checkToken, addBook);
+router.put('/:bookid', isLoggedIn, checkToken, updateBook);
+router.delete('/:book', isLoggedIn, checkToken, delBook);
 
 module.exports = router;

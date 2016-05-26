@@ -4,6 +4,7 @@ require('babel-register')({
     presets: ['es2015']  //, 'react'
 })
 
+var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var http = require('http');
 var path = require('path');
 var express = require('express');
@@ -17,7 +18,6 @@ var session = require('express-session');
 var mongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
 //var TwitterStrategy = require("passport-twitter").Strategy;
 var flash = require('connect-flash');
@@ -126,7 +126,18 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   User.findById(id, function(err, user) {
-    done(err, user);
+      
+      /// create JWT token
+      var n = jwt.sign(user, 'sekretJWT', {expiresIn: '1h'});  // expires in 24 hours
+      var userData = {
+        email: user.email,
+        password: user.password,
+        _id: user._id,
+        token: n
+      };
+      
+      //console.log("---------------------------////////////",userData);    
+    done(err, userData);
   });
 });
 
@@ -166,31 +177,13 @@ passport.use('local-login', new LocalStrategy({
       if(!user) return done(null, false, req.flash('loginMessage','wrong user/password'));
       
       if(!user.validPassword(password)) return done(null, false, req.flash('loginMessage','wrong user/password'));
+
       
       return done(null, user);
     });
   
 }));
 /*
-
-passport.use(new TwitterStrategy({
-    consumerKey: process.env.TWITTER_CONSUMER_KEY,
-    consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-    callbackURL: process.env.TWITTER_CALLBACK || "http://127.0.0.1/auth/twitter/callback"
-  },
-  function(token, tokenSecret, profile, cb) {
-      return cb(null, profile);
-  }
-));
-
-passport.serializeUser(function(user, cb) {
-  cb(null, user);
-});
-
-passport.deserializeUser(function(obj, cb) {
-  cb(null, obj);
-});
-
 
 // middleware to send user info/status
 app.use(function(req, res, next) {
@@ -202,44 +195,12 @@ app.use(function(req, res, next) {
   next();
 })
 
-app.get('/auth/twitter', passport.authenticate('twitter'));
-
-app.get('/auth/twitter/callback', 
-  passport.authenticate('twitter', 
-  { failureRedirect: '/',
-    failureFlash : true }),
-  function(req, res) {
-    // Successful authentication, redirect home.
-    res.locals.test = "hello";
-    res.redirect('/');
-  });
-  
-app.get('/auth/logout', function(req, res) {
-        req.logout();
-        res.redirect('/successLogout'); // to let client know is loggedout.. and it should do cleanning
-});
-    
-app.get('/auth/user', isLoggedIn, function(req,res){
-  res.json(req.user);
-});
-
 */
 ////////////////************* end passport
 
 
 ///////////// routes
 
-app.use('/api/books', require('./api/books'));
-//app.use('/api/places', require('./api/places'));
-
-/*
-// all undefined asset or api routes should return 404 (from yeoman code)
-app.route('/:url(api|auth|components)/*').get(function(req,res){
-  console.log("herer url regex");
-  return res.status(404).json({status:404});
-});
-
-*/
 
 app.get('/login', function(req,res){
     res.render('login.ejs', { message: req.flash('loginMessage') });
@@ -271,25 +232,44 @@ app.get('/logout', function(req,res){
 
 app.get('/',function(req,res){
 //  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
-console.log("user", req.user);
-  res.render('index.ejs', {user: req.user, message: req.flash('loginMessage'), userId:"test"});
+console.log("user logged???? ", req.user);
+  res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')});
+});
+
+//// CORS
+
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || "*");
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, HEAD, DELETE, OPTIONS');
+    res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+    if (req.method === 'OPTIONS') {
+        return res.end();
+    }
+    next();
 });
 
 
-//check if is logged middleware
-function isLoggedIn(req,res,next){
-  if(req.isAuthenticated()){
-    return next();
-  }
-  res.redirect("/");
-}
-//all others resources should redirect to the index.html
+// api 
+app.use('/api/books', require('./api/books'));
+//app.use('/api/places', require('./api/places'));
 
+/*
+// all undefined asset or api routes should return 404 (from yeoman code)
+app.route('/:url(api|auth|components)/*').get(function(req,res){
+  console.log("herer url regex");
+  return res.status(404).json({status:404});
+});
+
+*/
+
+//all others resources should redirect to the index.html
 
 app.route('*').get(function(req,res){
 //  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
+console.log("all * routes: user",req.user);
   res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')})
 });
+
 
 
 /*

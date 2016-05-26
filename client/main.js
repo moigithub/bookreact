@@ -12,7 +12,7 @@ import {createStore, combineReducers, applyMiddleware} from 'redux';
 // const Provider = require('react-redux').Provider
 import { Provider, connect } from 'react-redux'
 
-
+const objectAssign = require('object-assign');
 
 //require('es6-promise').polyfill();
 //import fetch from 'isomorphic-fetch'
@@ -44,10 +44,10 @@ const handleBooks =(state=[],action)=>{
             return [...state, action.book];
         case 'REMOVE_BOOK':
             //console.log("reducer del",action);
-            return state.filter(book => book.isbn!=action.book.isbn);
+            return state.filter(book => book._id!=action.book._id);
         case 'UPDATE_BOOK':
             console.log("TOGLE reducer action",action);
-            return state.filter(book => book.isbn!=action.book.isbn).concat(action.book);
+            return state.filter(book => book._id!=action.book._id).concat(action.book);
         default:
             return state;
     }
@@ -88,7 +88,7 @@ function getServerData() {
     }
 }
 
-function addBook(bookName, userId) {
+function addBook(bookName, user) {
 /*
   return {
     type: 'ADD_STOCK_SYMBOL',
@@ -100,8 +100,23 @@ function addBook(bookName, userId) {
         /// http request
         var API_URL ="/api/books";
 
-        $.post(API_URL,{"book":bookName, "userId": userId},null, "json")
-            .done(function(data){
+ //$.ajaxSetup({ );
+
+
+        $.ajax({
+            url: API_URL,
+            headers: { 'Authorization': user.tk },
+            // beforeSend: function(xhr){xhr.setRequestHeader('X-Header', 'header-value');},   
+            method: 'POST',
+            //type:'post', //old versions use type instead method
+            dataType: 'json',
+            data: {
+                "book":bookName, "userId": user.userId
+            },
+    //        contentType: "application/json; charset=utf-8",
+            //processData:false,
+            //cache: false,
+        }).done(function(data){
                 //console.log("data",data);
                 // socket will add data to state
                 dispatch({type: 'ADD_BOOK', book:data})
@@ -110,26 +125,27 @@ function addBook(bookName, userId) {
                 console.error("error",err);
                 //alert(err.responseText);
             });
+        
     }
 
 }
 
-function toggleBookRequest(book,userId) {
+function toggleBookRequest(book,user) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("toggle", book, userId);
-        let imOnList = book.tradeRequest.indexOf(userId)>-1;
+       // console.log("toggle", book, userId);
+        let imOnList = book.tradeRequest.indexOf(user.userId)>-1;
         var newBook;
         if(imOnList){
             //remove
-            newBook= Object.assign({}, book, {
-                tradeRequest : book.tradeRequest.filter(function(user){user != userId})
+            newBook= objectAssign({}, book, {
+                tradeRequest : book.tradeRequest.filter(function(user){user != user.userId})
             });
         } else {
             //add user to list
-            newBook= Object.assign({}, book, {
-                tradeRequest: [...book.tradeRequest, userId]
+            newBook= objectAssign({}, book, {
+                tradeRequest: [...book.tradeRequest, user.userId]
             });
         }
 console.log("after changes", newBook);
@@ -139,11 +155,14 @@ console.log("after changes", newBook);
 //        $.post(API_URL,{"book":book._id},null, "json")
         $.ajax({
             url:`${API_URL}/${book._id}`,
-            type:"PUT",
+            method:"PUT",
             data: JSON.stringify(newBook),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             processData :false,
+            headers: {
+                "Authorization": user.tk  //for object property name, use quoted notation shown in second
+            },
             //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
@@ -162,7 +181,7 @@ console.log("after changes", newBook);
 }
 
 
-function removeBook(book) {
+function removeBook(book,user) {
 /*    
   return {
     type: 'REMOVE_STOCK_SYMBOL',
@@ -176,7 +195,10 @@ function removeBook(book) {
 //console.log("delete",book);
         $.ajax({
             url:API_URL+book._id,
-            type:"DELETE"
+            method:"DELETE",
+            headers: {
+                "Authorization": user.tk  //for object property name, use quoted notation shown in second
+            },
         })
             .done(function(data){
                 //console.log("data",data);
@@ -191,13 +213,13 @@ function removeBook(book) {
   
 }
 
-function setNewOwner(book,userId) {
+function setNewOwner(book,user,whoWantBookId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("setNewOwner", book, userId);
-        var newBook= Object.assign({}, book, {
-            owner: userId,
+        console.log("setNewOwner", book, whoWantBookId);
+        var newBook= objectAssign({}, book, {
+            owner: whoWantBookId,
             tradeRequest: []
         });
 
@@ -207,11 +229,14 @@ function setNewOwner(book,userId) {
 //        $.post(API_URL,{"book":book._id},null, "json")
         $.ajax({
             url:`${API_URL}/${book._id}`,
-            type:"PUT",
+            method:"PUT",
             data: JSON.stringify(newBook),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             processData :false,
+            headers: {
+                "Authorization": user.tk  //for object property name, use quoted notation shown in second
+            },
             //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
@@ -230,13 +255,13 @@ function setNewOwner(book,userId) {
 }
 
 
-function declineRequest(book,userId) {
+function declineRequest(book,user,whoWantBookId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("declineRequest", book, userId);
-        var newBook= Object.assign({}, book, {
-                tradeRequest : book.tradeRequest.filter(user=>user != userId)
+        console.log("declineRequest", book, whoWantBookId);
+        var newBook= objectAssign({}, book, {
+                tradeRequest : book.tradeRequest.filter(u=>u != whoWantBookId)
             });
 
         /// http request
@@ -245,12 +270,14 @@ function declineRequest(book,userId) {
 //        $.post(API_URL,{"book":book._id},null, "json")
         $.ajax({
             url:`${API_URL}/${book._id}`,
-            type:"PUT",
-            data: JSON.stringify(newBook),
+            headers: {
+                "Authorization": user.tk  //for object property name, use quoted notation shown in second
+            },
+            method:"PUT",
+            data: newBook, //JSON.stringify(newBook),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
-            processData :false,
-            //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
+//            processData :false,
         })
             .done(function(data){
                 console.log("data from put",data, newBook);
@@ -267,12 +294,12 @@ function declineRequest(book,userId) {
 
 }
 
-function declineAllRequest(book) {
+function declineAllRequest(book, user) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
         console.log("declineAllRequest", book);
-        var newBook= Object.assign({}, book, {
+        var newBook= objectAssign({}, book, {
                 tradeRequest : []
             });
 
@@ -282,11 +309,14 @@ function declineAllRequest(book) {
 //        $.post(API_URL,{"book":book._id},null, "json")
         $.ajax({
             url:`${API_URL}/${book._id}`,
-            type:"PUT",
+            method:"PUT",
             data: JSON.stringify(newBook),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             processData :false,
+            headers: {
+                "Authorization": user.tk  //for object property name, use quoted notation shown in second
+            },
             //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
@@ -319,7 +349,8 @@ class AddBookForm extends React.Component {
         const {store} = this.context;
         e.preventDefault();
         var book = this.refs.book.value;
-        store.dispatch(addBook(book, store.getState().user.userId));
+       
+        store.dispatch(addBook(book, store.getState().user));
         this.refs.book.value='';
     }
         
@@ -368,18 +399,18 @@ class Book extends React.Component {
             <div className="book">
                 <img src={book.image|| defaultImg} className="bookImg"/>
                 <div className="bookName">{book.name}</div>
-                { book.owner === userId &&
+                { userId && (book.owner === userId) &&
                 <button onClick={onClose} className="closeBtn btn btn-danger btn-xs">
                     <span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button> 
                 }
                 
-                { book.owner !== userId &&
+                { userId && (book.owner !== userId) &&
                 <button onClick={onTrade} className="tradeBtn">
                     <span className="glyphicons glyphicons-iphone-transfer" aria-hidden="true">{requested?"cancel request":"Request"}</span>
                 </button> 
                 }
-                { book.owner === userId &&
+                { userId && (book.owner === userId) &&
                 <div className="reqPendant">
                     <span className="glyphicons glyphicons-alarm" aria-hidden="true"></span>{book.tradeRequest.length} request
                 </div> 
@@ -397,12 +428,13 @@ class _BookList extends React.Component {
 
     render(){
         const {books,user, remBook,toggleBook} = this.props;
-        console.log("books",this.props);
+        //console.log("books",this.props);
         const userId =user&&user.userId ? user.userId : null;
+        //console.log(books);
         return(
                 <div class="bookList">
                     {books.map((book,i)=>(
-                        <Book key={i} book={book} userId={userId} onClose={()=>remBook(book)} onTrade={()=>toggleBook(book, userId)}/>
+                        <Book key={i} book={book} userId={userId} onClose={()=>remBook(book,user)} onTrade={()=>toggleBook(book, user)}/>
                     ))}
                 </div>
         );
@@ -410,16 +442,16 @@ class _BookList extends React.Component {
 }
 function mapDispatchToProps(dispatch){
     return {
-        remBook: (book)=>{
-            dispatch(removeBook(book));
+        remBook: (book,user)=>{
+            dispatch(removeBook(book,user));
         },
-        toggleBook : (book, userId)=>{
-            dispatch(toggleBookRequest(book,userId));
+        toggleBook : (book, user)=>{
+            dispatch(toggleBookRequest(book,user));
         }
     };
 }
 function mapStateToProps(state) {
-    //console.log("mapstatetoprops store",state);
+    console.log("mapstatetoprops store",state);
     return {
         books:state.books,
         user:state.user
@@ -437,9 +469,9 @@ function mapStateToMyBooksProps(state) {
 }
 var MyBookList = connect(mapStateToMyBooksProps,mapDispatchToProps)(_BookList);
 ////////
-const Request =({user, onAccept, onDecline})=>(
+const Request =({whoWantBookId, onAccept, onDecline})=>(
     <li className="request list-group-item">
-        <span>{user}</span>
+        <span>{whoWantBookId}</span>
         <div className="btn-group pull-right" role="group">
             <button className="btn btn-xs btn-info" onClick={onAccept}><span className="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
             &nbsp;
@@ -448,7 +480,7 @@ const Request =({user, onAccept, onDecline})=>(
     </li>
     );
 //////////////
-let Pendants = ({books, Accept, Decline, DeclineAll})=>{
+let Pendants = ({books,user, Accept, Decline, DeclineAll})=>{
     const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
     return (
         <div className="row">
@@ -462,11 +494,11 @@ let Pendants = ({books, Accept, Decline, DeclineAll})=>{
                                 <p className="bookName">{book.name}</p>
                             </div>
                             <div className="col-xs-8">
-                                <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll(book)}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
+                                <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll(book,user)}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
                                 <ul className="list-group">
-                                {book.tradeRequest.map((userId,i)=><Request key={i} user={userId}
-                                                                    onAccept={()=>Accept(book,userId)}
-                                                                    onDecline={()=>Decline(book,userId)}
+                                {book.tradeRequest.map((whoWantBookId,i)=><Request key={i} whoWantBookId={whoWantBookId}
+                                                                    onAccept={()=>Accept(book,user,whoWantBookId)}
+                                                                    onDecline={()=>Decline(book,user,whoWantBookId)}
                                                                  />)}
                                 </ul>
                             </div>
@@ -483,23 +515,23 @@ let Pendants = ({books, Accept, Decline, DeclineAll})=>{
 
 function mapDispatchPendantsToProps(dispatch){
     return {
-        Accept:(book,newOwner)=>{
+        Accept:(book,user,whoWantBookId)=>{
             // set owner to new user and clear tradeRequest array
             //dispatch some action
-            console.log("accept ", book, newOwner);
-            dispatch(setNewOwner(book, newOwner));
+            console.log("accept ", book, whoWantBookId);
+            dispatch(setNewOwner(book, user, whoWantBookId));
         },
-        Decline:(book,newOwner)=>{
+        Decline:(book,user,whoWantBookId)=>{
             // remove user from tradeRequest Array
             //dispatch some action
-            console.log("decline ", book,newOwner);
-            dispatch(declineRequest(book, newOwner));
+            console.log("decline ", book,whoWantBookId);
+            dispatch(declineRequest(book,user, whoWantBookId));
         },
-        DeclineAll:(book)=>{
+        DeclineAll:(book,user)=>{
             // remove user from tradeRequest Array
             //dispatch some action
             console.log("declineAll ", book);
-            dispatch(declineAllRequest(book));
+            dispatch(declineAllRequest(book,user));
         }
 
     }
@@ -530,16 +562,14 @@ class Main extends React.Component {
     componentDidMount(){
         //get initial data from server
         this.context.store.dispatch(getServerData());
-        console.log(window.uid);
         //this.context.store.dispatch(setUser(window.uid));
-        console.log("state",this.context.store.getState());
     }
     
     render(){
         
         ////////.
         //const state = this.context.store.getState();
-        console.log("userid",this.context.store.getState());
+        console.log("state",this.context.store.getState());
         return (
             
             <div >
@@ -570,10 +600,11 @@ export default class Root extends Component {
 ///// STORE ///
 import thunk from 'redux-thunk';
 console.log("window.uid", window.__uid);
-const initialState = {books:[],user:{userId:window.__uid}};
+const initialState = {books:[],user:{userId:window.__uid, tk: window.__tk}};
 const createStoreWithThunk = applyMiddleware(thunk)(createStore);
 const allReducers = combineReducers({books:handleBooks,user:handleUser});
 const bookStore = createStoreWithThunk(allReducers, initialState);
+console.log("storeeeee",bookStore.getState());
 /*
 const stockStore = createStore(
   handleStocks,
