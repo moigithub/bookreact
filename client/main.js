@@ -616,6 +616,21 @@ const stockStore = createStore(
 */
 /// FIN STORE ////
 
+function requireAuth(nextState, replace) {
+    //console.log(nextState.location);
+  if (!bookStore.getState().user.userId) {
+      /*
+    replace({
+      pathname: '/auth/twitter' // only work if auth/twiter if part of <Route> list
+    })
+    */
+    window.location = "/";
+    
+    
+    //router.replace({ pathname, query, state }) // new "location descriptor"
+     
+  }
+}
 
 ReactDOM.render((
 <Provider store={bookStore}>
@@ -624,7 +639,7 @@ ReactDOM.render((
         <IndexRoute component={BookList} />
 
         <Route path="Books" component={BookList}></Route>
-        <Route path="MyBooks" component={MyBooksWithRequest}></Route>
+        <Route path="MyBooks" component={MyBooksWithRequest}   onEnter={requireAuth}></Route>
 
     
     </Route>

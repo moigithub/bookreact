@@ -205,18 +205,46 @@ app.use(function(req, res, next) {
 app.get('/login', function(req,res){
     res.render('login.ejs', { message: req.flash('loginMessage') });
 });
-
-app.get('/signup', function(req, res) {
-    // render the page and pass in any flash data if it exists
-    res.render('signup.ejs', { message: req.flash('signupMessage') });
-});
-    
 app.post('/login', passport.authenticate('local-login', {
     successRedirect : '/books', // redirect to the secure profile section
     failureRedirect : '/login', // redirect back to the signup page if there is an error
     failureFlash : true // allow flash messages
 }));
 
+
+app.get('/settings', midwares.isLoggedIn, function(req,res){
+    res.render('settings.ejs', {user: req.user, message: req.flash('settingsMessage') });
+});
+
+const midwares = require('./midwares');
+app.post('/settings', midwares.isLoggedIn, midwares.checkToken, function(req,res){
+  console.log(req.body);
+  User.findById(req.body._id, function(err,user){
+    if (err) { return handleError(res, err); }
+    if(!user) { return res.status(404).send('Not Found'); }
+    
+    user.fullName = req.body.fullName || "";
+    user.city = req.body.city || "";
+    user.state = req.body.state || "";
+
+    user.save(function (err) {
+      if (err) { return handleError(res, err); }
+      return res.status(200).json(user);
+    });
+  });
+});
+function handleError(res, err) {
+  console.log("error",err);
+  return res.status(500).send(err);
+}
+
+
+
+app.get('/signup', function(req, res) {
+    // render the page and pass in any flash data if it exists
+    res.render('signup.ejs', { message: req.flash('signupMessage') });
+});
+    
 // process the signup form
 app.post('/signup', passport.authenticate('local-signup', {
     successRedirect : '/books', // redirect to the secure profile section

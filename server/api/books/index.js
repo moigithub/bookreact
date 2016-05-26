@@ -1,7 +1,6 @@
 'use strict';
 var Books = require('./books_model');
 var BookAPI = require('./bookAPI');
-var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 /////////////////////
 
 
@@ -115,39 +114,15 @@ function handleError(res, err) {
 
 
 
-// check JWT middleware
-// it will afffect all below THIS line routes
-function checkToken(req, res, next) {
-  var token = req.headers['authorization'];
-  console.log("headers",req.headers);
-  if(token){
-    console.log("no token");
-    jwt.verify(token, 'sekretJWT', function(err, decoded){
-      if(err) return res.json({message:'auth failed.'})
-      
-      req.decoded = decoded;
-      return next();
-    })
-  } else {
-    return res.status(403).send({message:'Access not allowed.'});
-  }
-};
-
-//check if is logged middleware
-function isLoggedIn(req,res,next){
-  if(req.isAuthenticated()){
-    return next();
-  }
-  res.redirect("/");
-}
+const midwares = require('../../midwares');
 
 
 var express = require('express');
 var router = express.Router();
 
 router.get('/', getBook);
-router.post('/', isLoggedIn, checkToken, addBook);
-router.put('/:bookid', isLoggedIn, checkToken, updateBook);
-router.delete('/:book', isLoggedIn, checkToken, delBook);
+router.post('/', midwares.isLoggedIn, midwares.checkToken, addBook);
+router.put('/:bookid', midwares.isLoggedIn, midwares.checkToken, updateBook);
+router.delete('/:book', midwares.isLoggedIn, midwares.checkToken, delBook);
 
 module.exports = router;

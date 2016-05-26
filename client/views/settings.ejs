@@ -1,3 +1,4 @@
+<!-- views/settings.ejs -->
 <!DOCTYPE html>
 <html>
     <head>
@@ -21,7 +22,7 @@
                   <span class="glyphicons glyphicons-book-open" aria-hidden="true"></span> <i class="fa fa-book" aria-hidden="true"></i></i></span> Transfer Books
               </a>
             </div>
-            
+
             <div class="collapse navbar-collapse" id="topmenu">
               <% if (user) { %>
                 <ul class="nav navbar-nav">
@@ -29,7 +30,7 @@
                     <li><a href="MyBooks">My Books</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><p class="navbar-text"><span>Welcome</span> <%= user.fullName ? user.fullName : user.email %></p></li>
+                    <li><p class="navbar-text"><span>Welcome</span> <%=  user.fullName ? user.fullName : user.email  %></p></li>
                     <li><a href="/logout">Logout</a></li>
                 </ul>
               <% } else { %>  
@@ -39,25 +40,53 @@
                 </ul>
               <% } %>
             </div>
-          
-        </nav>     
+        </nav>
         
-        <div id="app" class="container"></div>
+        <div class="container">
         
-        <footer>
+            <div class="col-sm-6 col-sm-offset-3">
+            
+                <h1><span class="fa fa-sign-in"></span> Settings</h1>
+            
+                <!-- show any messages that come back with authentication -->
+                <% if (message.length > 0) { %>
+                    <div class="alert alert-danger"><%= message %></div>
+                <% } %>
+            
+                <!-- LOGIN FORM -->
+                <div class="userData">
+                    <p><strong>E-mail :</strong> <%= user.email%></p>
+                </div>
+                
+                <form action="/settings" method="post">
+                    <input type="text" name="_id" value="<%= user._id %>">
+                    
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" value="<%= user.fullName %>" class="form-control" name="fullName">
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" value="<%= user.city %>" class="form-control" name="city">
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" value="<%= user.state %>" class="form-control" name="state">
+                    </div>
+            
+                    <button type="submit" class="btn btn-warning btn-lg">Save</button>
+                </form>
+            
+                <hr>
+            
+                <p>Or go <a href="/">home</a>.</p>
+            
+            </div>
+        
+        </div>
+         <footer>
             <p> a <a href="https://www.freecodecamp.com/" target="_blank">FCC</a> basejump exercise by <a href="https://www.freecodecamp.com/moigithub" target="_blank">@MMan</a></p>
             <p>Powered by <a href="https://developers.google.com/books/docs/overview">Google Books API</a></p>
         </footer>
-        
     </body>
-    
-    <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script type='text/javascript'>
-      window.__uid="<% if (user) {%><%= user._id %><%}%>";
-      window.__tk="<% if (user) {%><%= user.token %><%}%>";
-    </script>
-    <script src="/bundle.js"></script>
 </html>
