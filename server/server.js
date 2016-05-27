@@ -217,7 +217,7 @@ app.get('/settings', midwares.isLoggedIn, function(req,res){
     res.render('settings.ejs', {user: req.user, message: req.flash('settingsMessage') });
 });
 
-app.post('/settings', midwares.isLoggedIn, midwares.checkToken, function(req,res){
+app.post('/settings', midwares.isLoggedIn, function(req,res){  //, midwares.checkToken
   console.log(req.body);
   User.findById(req.body._id, function(err,user){
     if (err) { return handleError(res, err); }
@@ -260,7 +260,7 @@ app.get('/logout', function(req,res){
 
 app.get('/',function(req,res){
 //  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
-console.log("user logged???? ", req.user);
+//console.log("user logged???? ", req.user);
   res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')});
 });
 
@@ -294,7 +294,7 @@ app.route('/:url(api|auth|components)/*').get(function(req,res){
 
 app.route('*').get(function(req,res){
 //  res.sendFile(path.resolve(path.join(__dirname, '../public')+'/index.html'));
-console.log("all * routes: user",req.user);
+//console.log("all * routes: user",req.user);
   res.render('index.ejs', {user: req.user, message: req.flash('loginMessage')})
 });
 

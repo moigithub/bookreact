@@ -78,7 +78,7 @@ function getServerData() {
 
         $.get(API_URL)
             .done(function(data){
-                console.log("server data",data);
+    //            console.log("server data",data);
                 dispatch({type: 'SERVER_DATA', book:data})
             })
             .fail(function(err){
@@ -134,21 +134,8 @@ function toggleBookRequest(book,user) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-       // console.log("toggle", book, userId);
-        let imOnList = book.tradeRequest.indexOf(user.userId)>-1;
-        var newBook;
-        if(imOnList){
-            //remove
-            newBook= objectAssign({}, book, {
-                tradeRequest : book.tradeRequest.filter(function(user){user != user.userId})
-            });
-        } else {
-            //add user to list
-            newBook= objectAssign({}, book, {
-                tradeRequest: [...book.tradeRequest, user.userId]
-            });
-        }
-console.log("after changes", newBook);
+        //send data to server n make toggle operation there, 
+        //since once populated the array.. hard to modify, server will have the original array easier to modify
         /// http request
         var API_URL ="/api/books";
 
@@ -156,7 +143,7 @@ console.log("after changes", newBook);
         $.ajax({
             url:`${API_URL}/${book._id}`,
             method:"PUT",
-            data: JSON.stringify(newBook),
+            data: JSON.stringify({"action":"toggle","user":user.userId}),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             processData :false,
@@ -166,10 +153,9 @@ console.log("after changes", newBook);
             //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
-                console.log("data from put",data, newBook);
+                console.log("toggleBookRequest",data);
                 // socket will add data to state
-                //console.log("toogleBookRequest", book, userId);
-                dispatch({type:'UPDATE_BOOK', book: data});
+                dispatch({type:'UPDATE_BOOK', book: data}); //tradeRequest populated book returns
                 
             })
             .fail(function(err){
@@ -217,11 +203,7 @@ function setNewOwner(book,user,whoWantBookId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("setNewOwner", book, whoWantBookId);
-        var newBook= objectAssign({}, book, {
-            owner: whoWantBookId,
-            tradeRequest: []
-        });
+ //       console.log("setNewOwner", book, whoWantBookId);
 
         /// http request
         var API_URL ="/api/books";
@@ -230,7 +212,7 @@ function setNewOwner(book,user,whoWantBookId) {
         $.ajax({
             url:`${API_URL}/${book._id}`,
             method:"PUT",
-            data: JSON.stringify(newBook),
+            data: JSON.stringify({"action":"newOwner","user":whoWantBookId}),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
             processData :false,
@@ -240,7 +222,7 @@ function setNewOwner(book,user,whoWantBookId) {
             //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
         })
             .done(function(data){
-                console.log("data from put",data, newBook);
+ //               console.log("data from put",data, newBook);
                 // socket will add data to state
                 //console.log("toogleBookRequest", book, userId);
                 dispatch({type:'UPDATE_BOOK', book: data});
@@ -259,11 +241,6 @@ function declineRequest(book,user,whoWantBookId) {
     return function(dispatch){
         //change the book tradeRequest
         //remove user from list
-        console.log("declineRequest", book, whoWantBookId);
-        var newBook= objectAssign({}, book, {
-                tradeRequest : book.tradeRequest.filter(u=>u != whoWantBookId)
-            });
-
         /// http request
         var API_URL ="/api/books";
 
@@ -274,16 +251,16 @@ function declineRequest(book,user,whoWantBookId) {
                 "Authorization": user.tk  //for object property name, use quoted notation shown in second
             },
             method:"PUT",
-            data: newBook, //JSON.stringify(newBook),
+            data: JSON.stringify({"action":"decline","user":whoWantBookId}),
             contentType: "application/json; charset=utf-8",
             dataType: 'json',
 //            processData :false,
         })
             .done(function(data){
-                console.log("data from put",data, newBook);
+   //             console.log("data from put",data, newBook);
                 // socket will add data to state
                 //console.log("toogleBookRequest", book, userId);
-                dispatch({type:'UPDATE_BOOK', book: data});
+                dispatch({type:'UPDATE_BOOK', book: data});  //return populated tradeRequest book
                 
             })
             .fail(function(err){
@@ -294,45 +271,6 @@ function declineRequest(book,user,whoWantBookId) {
 
 }
 
-function declineAllRequest(book, user) {
-    return function(dispatch){
-        //change the book tradeRequest
-        //remove user from list
-        console.log("declineAllRequest", book);
-        var newBook= objectAssign({}, book, {
-                tradeRequest : []
-            });
-
-        /// http request
-        var API_URL ="/api/books";
-
-//        $.post(API_URL,{"book":book._id},null, "json")
-        $.ajax({
-            url:`${API_URL}/${book._id}`,
-            method:"PUT",
-            data: JSON.stringify(newBook),
-            contentType: "application/json; charset=utf-8",
-            dataType: 'json',
-            processData :false,
-            headers: {
-                "Authorization": user.tk  //for object property name, use quoted notation shown in second
-            },
-            //headers: {"X-HTTP-Method-Override": "PUT"}, // X-HTTP-Method-Override set to PUT.
-        })
-            .done(function(data){
-                console.log("data from put",data, newBook);
-                // socket will add data to state
-                //console.log("toogleBookRequest", book, userId);
-                dispatch({type:'UPDATE_BOOK', book: data});
-                
-            })
-            .fail(function(err){
-                console.error("error",err);
-                //alert(err.responseText);
-            });
-    }
-
-}
 ///////END ACTION CREATOR//////////
 
 /////////////////
@@ -394,9 +332,14 @@ class Book extends React.Component {
     render(){
         const {book, userId, onClose, onTrade} = this.props;
         const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
-        var requested = book.tradeRequest.indexOf(userId) > -1;
+        var requested = book.tradeRequest.filter(function(u){
+            if(u.user) return u.user._id==userId;
+            return false;
+        }).length > 0;
+        console.log("traderequest",book.tradeRequest,userId,requested);
         return (
             <div className="book">
+            
                 <img src={book.image|| defaultImg} className="bookImg"/>
                 <div className="bookName">{book.name}</div>
                 { userId && (book.owner === userId) &&
@@ -451,7 +394,7 @@ function mapDispatchToProps(dispatch){
     };
 }
 function mapStateToProps(state) {
-    console.log("mapstatetoprops store",state);
+ //   console.log("mapstatetoprops store",state);
     return {
         books:state.books,
         user:state.user
@@ -469,18 +412,17 @@ function mapStateToMyBooksProps(state) {
 }
 var MyBookList = connect(mapStateToMyBooksProps,mapDispatchToProps)(_BookList);
 ////////
-const Request =({whoWantBookId, onAccept, onDecline})=>(
+const Request =({whoWantBook, onAccept, onDecline})=>(
     <li className="request list-group-item">
-        <span>{whoWantBookId}</span>
-        <div className="btn-group pull-right" role="group">
+        <span className="">{whoWantBook}</span>
+        <span className="btn-group" role="group" aria-label="...">
             <button className="btn btn-xs btn-info" onClick={onAccept}><span className="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
-            &nbsp;
             <button className="btn btn-xs btn-danger" onClick={onDecline}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-        </div>
+        </span>
     </li>
     );
 //////////////
-let Pendants = ({books,user, Accept, Decline, DeclineAll})=>{
+let Pendants = ({books,user, Accept, Decline})=>{
     const defaultImg = "http://artsandcrafts.gr/css/img/na.jpg";
     return (
         <div className="requestList">
@@ -494,11 +436,11 @@ let Pendants = ({books,user, Accept, Decline, DeclineAll})=>{
                                 <p className="bookName">{book.name}</p>
                             </div>
                             <div className="col-xs-8">
-                                <button className="btn btn-xs btn-danger" onClick={()=>DeclineAll(book,user)}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
+                                <button className="btn btn-xs btn-danger" onClick={()=>Decline(book,user,"*")}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span> Decline All</button>
                                 <ul className="list-group">
-                                {book.tradeRequest.map((whoWantBookId,i)=><Request key={i} whoWantBookId={whoWantBookId}
-                                                                    onAccept={()=>Accept(book,user,whoWantBookId)}
-                                                                    onDecline={()=>Decline(book,user,whoWantBookId)}
+                                {book.tradeRequest.map((whoWantBook,i)=><Request key={i} whoWantBook={whoWantBook.user?whoWantBook.user.email:"unknown"}
+                                                                    onAccept={()=>Accept(book,user,whoWantBook.user._id)}
+                                                                    onDecline={()=>Decline(book,user,whoWantBook.user._id)}
                                                                  />)}
                                 </ul>
                             </div>
@@ -527,13 +469,6 @@ function mapDispatchPendantsToProps(dispatch){
             console.log("decline ", book,whoWantBookId);
             dispatch(declineRequest(book,user, whoWantBookId));
         },
-        DeclineAll:(book,user)=>{
-            // remove user from tradeRequest Array
-            //dispatch some action
-            console.log("declineAll ", book);
-            dispatch(declineAllRequest(book,user));
-        }
-
     }
 }
 Pendants = connect(mapStateToMyBooksProps, mapDispatchPendantsToProps)(Pendants)
@@ -569,7 +504,7 @@ class Main extends React.Component {
         
         ////////.
         //const state = this.context.store.getState();
-        console.log("state",this.context.store.getState());
+        console.log("Main state",this.context.store.getState());
         return (
             
             <div >

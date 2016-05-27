@@ -4,7 +4,7 @@ var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 // it will afffect all below THIS line routes
 exports.checkToken = function (req, res, next) {
   var token = req.headers['authorization'];
-  console.log("headers",req.headers);
+//  console.log("headers",req.headers);
   if(token){
     jwt.verify(token, 'sekretJWT', function(err, decoded){
       if(err) return res.json({message:'auth failed.'})
