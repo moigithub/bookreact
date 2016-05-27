@@ -7,14 +7,14 @@ body {
     color:#222;
     margin-bottom: 60px;
 
-    background: rgba(40,112,130,1);
-    background: -moz-linear-gradient(-45deg, rgba(40,112,130,1) 0%, rgba(14,49,59,1) 100%);
-    background: -webkit-gradient(left top, right bottom, color-stop(0%, rgba(40,112,130,1)), color-stop(100%, rgba(14,49,59,1)));
-    background: -webkit-linear-gradient(-45deg, rgba(40,112,130,1) 0%, rgba(14,49,59,1) 100%);
-    background: -o-linear-gradient(-45deg, rgba(40,112,130,1) 0%, rgba(14,49,59,1) 100%);
-    background: -ms-linear-gradient(-45deg, rgba(40,112,130,1) 0%, rgba(14,49,59,1) 100%);
-    background: linear-gradient(135deg, rgba(40,112,130,1) 0%, rgba(14,49,59,1) 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#287082', endColorstr='#0e313b', GradientType=1 );    
+    background: rgba(230,138,122,1);
+    background: -moz-linear-gradient(-45deg, rgba(230,138,122,1) 0%, rgba(212,32,59,1) 100%);
+    background: -webkit-gradient(left top, right bottom, color-stop(0%, rgba(230,138,122,1)), color-stop(100%, rgba(212,32,59,1)));
+    background: -webkit-linear-gradient(-45deg, rgba(230,138,122,1) 0%, rgba(212,32,59,1) 100%);
+    background: -o-linear-gradient(-45deg, rgba(230,138,122,1) 0%, rgba(212,32,59,1) 100%);
+    background: -ms-linear-gradient(-45deg, rgba(230,138,122,1) 0%, rgba(212,32,59,1) 100%);
+    background: linear-gradient(135deg, rgba(230,138,122,1) 0%, rgba(212,32,59,1) 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e68a7a', endColorstr='#d4203b', GradientType=1 );
 }
 
 footer {
@@ -34,9 +34,15 @@ footer {
     display: block;
     float: left;
     background-color: #333;
-    margin: 5px;
+    margin: 10px;
     overflow: hidden;
 
+    border: 5px solid #222;
+    box-sizing: border-box;
+    
+-webkit-box-shadow: -8px -8px 16px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: -8px -8px 16px 0px rgba(0,0,0,0.75);
+box-shadow: -8px -8px 16px 0px rgba(0,0,0,0.75);    
 }
 
 .book img {
@@ -44,7 +50,6 @@ footer {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: -999;
 }
 
 .book .closeBtn {
@@ -59,7 +64,7 @@ footer {
     text-align: center;
     padding: 5px;
     z-index: 999;
-    background-color: #86616e;
+    background-color: #022FFB;
     color: #fff;
     font-size: 1.1em;
     box-sizing: border-box;
@@ -86,8 +91,27 @@ footer {
 }
 
 .book .reqPendant{
-    background-color: blue;
+    background-color: #cb8e0a;
     color: #eee;
+    opacity: .9;
     display: block;
-    height: 20px;
+    box-sizing: border-box;
+    padding: 3px;
+}
+
+.bookName {
+    font-size: 0.9em;
+}
+
+.pendantList {
+
+}
+
+.pendants {
+    border-radius: 10%;
+    padding: 5px 2px;
+    border: 2px solid black;
+    margin: 5px 2px;
+    background-color: #ccc;
+    
 }
