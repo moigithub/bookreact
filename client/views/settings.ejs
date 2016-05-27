@@ -8,6 +8,7 @@
 
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+        <link rel="stylesheet" href="stiles.css">
     </head>
     <body>
         <nav class="navbar navbar-default navbar-inverse">
@@ -59,9 +60,7 @@
                     <p><strong>E-mail :</strong> <%= user.email%></p>
                 </div>
                 
-                <form action="/settings" method="post">
-                    <input type="text" name="_id" value="<%= user._id %>">
-                    
+                <form id="settings">
                     <div class="form-group">
                         <label>Full Name</label>
                         <input type="text" value="<%= user.fullName %>" class="form-control" name="fullName">
@@ -89,5 +88,40 @@
             <p> a <a href="https://www.freecodecamp.com/" target="_blank">FCC</a> basejump exercise by <a href="https://www.freecodecamp.com/moigithub" target="_blank">@MMan</a></p>
             <p>Powered by <a href="https://developers.google.com/books/docs/overview">Google Books API</a></p>
         </footer>
+        <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+        <script type='text/javascript'>
+            window.__uid="<% if (user) {%><%= user._id %><%}%>";
+            window.__tk="<% if (user) {%><%= user.token %><%}%>";
+          
+            $("#settings").submit(function(e){
+                e.preventDefault();
+              
+                $.ajax({
+                    url: '/settings',
+                    headers: { 'Authorization': window.__tk },
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {
+                        '_id'   : window.__uid,
+                        'fullName' : $('input[name=fullName]').val(),
+                        'city'     : $('input[name=city]').val(),
+                        'state'    : $('input[name=state]').val()
+                    },
+            //        contentType: "application/json; charset=utf-8",
+                    //processData:false,
+                    //cache: false,
+                }).done(function(data){
+                        //console.log("data",data);
+                        // socket will add data to state
+//                        dispatch({type: 'ADD_BOOK', book:data})
+                        window.location.href = "/";
+                    })
+                    .fail(function(err){
+                        console.error("error",err);
+                        //alert(err.responseText);
+                    });              
+          });
+        </script>
+        
     </body>
 </html>

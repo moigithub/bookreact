@@ -130,10 +130,13 @@ passport.deserializeUser(function(id, done) {
       /// create JWT token
       var n = jwt.sign(user, 'sekretJWT', {expiresIn: '1h'});  // expires in 24 hours
       var userData = {
-        email: user.email,
-        password: user.password,
-        _id: user._id,
-        token: n
+        fullName : user.fullName,
+        state:     user.state,
+        city:      user.city,
+        email:     user.email,
+        password:  user.password,
+        _id:       user._id,
+        token:     n
       };
       
       //console.log("---------------------------////////////",userData);    
@@ -218,7 +221,7 @@ app.get('/settings', midwares.isLoggedIn, function(req,res){
 });
 
 app.post('/settings', midwares.isLoggedIn, function(req,res){  //, midwares.checkToken
-  console.log(req.body);
+  console.log("from settings post",req.body);
   User.findById(req.body._id, function(err,user){
     if (err) { return handleError(res, err); }
     if(!user) { return res.status(404).send('Not Found'); }
@@ -229,7 +232,12 @@ app.post('/settings', midwares.isLoggedIn, function(req,res){  //, midwares.chec
 
     user.save(function (err) {
       if (err) { return handleError(res, err); }
+      req.user.fullName = user.fullName;
+      req.user.city = user.city;
+      req.user.state = user.state;
+      
       return res.status(200).json(user);
+      
     });
   });
 });
