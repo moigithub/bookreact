@@ -14,11 +14,16 @@ import { Provider, connect } from 'react-redux'
 
 const objectAssign = require('object-assign');
 
+import toastr from 'toastr';
+// import $ from 'jquery';
+var $ = require("jquery");
+
 //require('es6-promise').polyfill();
 //import fetch from 'isomorphic-fetch'
 
 
 require("./styles.css");
+
 /////////// SOCKET
 /*
 var socket = io();
@@ -64,10 +69,11 @@ const handleUser =(state=null, action)=>{   //user {userid:'1', name:'sfsf'}
 ////FIN REDUCER ///
 
 ////////ACTION CREATOR//////
+/*
 function setUser(uid){
     return {type:'SET_USER',user: {userId:uid}};
 }
-
+*/
 
 ////////////
 function getServerData() {
@@ -84,6 +90,7 @@ function getServerData() {
             .fail(function(err){
                 console.error("error",err);
                 //alert(err.responseText);
+                toastr.error('Error getting books data from server');
             });
     }
 }
@@ -119,10 +126,12 @@ function addBook(bookName, user) {
         }).done(function(data){
                 //console.log("data",data);
                 // socket will add data to state
-                dispatch({type: 'ADD_BOOK', book:data})
+                dispatch({type: 'ADD_BOOK', book:data});
+                toastr.success(`Book ${bookName} added.`);
             })
             .fail(function(err){
                 console.error("error",err);
+                toastr.error('Error: '+err);
                 //alert(err.responseText);
             });
         
@@ -156,10 +165,12 @@ function toggleBookRequest(book,user) {
                 console.log("toggleBookRequest",data);
                 // socket will add data to state
                 dispatch({type:'UPDATE_BOOK', book: data}); //tradeRequest populated book returns
+//                toastr.success(`Book ${data.name} toggled request.`);
                 
             })
             .fail(function(err){
                 console.error("error",err);
+                toastr.error('Error: '+err);
                 //alert(err.responseText);
             });
     }
@@ -189,10 +200,12 @@ function removeBook(book,user) {
             .done(function(data){
                 //console.log("data",data);
                 // socket will remove data to state
-                dispatch({type: 'REMOVE_BOOK', book:book})
+                dispatch({type: 'REMOVE_BOOK', book:book});
+                toastr.success(`Book ${book.name} removed.`);
             })
             .fail(function(err){
                 console.error("error",err);
+                toastr.error('Error: '+err);
                 //alert(err.responseText);
             });
     }
@@ -226,10 +239,12 @@ function setNewOwner(book,user,whoWantBookId) {
                 // socket will add data to state
                 //console.log("toogleBookRequest", book, userId);
                 dispatch({type:'UPDATE_BOOK', book: data});
+  //              toastr.success(`Book ${data.name} updated.`);
                 
             })
             .fail(function(err){
                 console.error("error",err);
+                toastr.error('Error: '+err);
                 //alert(err.responseText);
             });
     }
@@ -261,10 +276,12 @@ function declineRequest(book,user,whoWantBookId) {
                 // socket will add data to state
                 //console.log("toogleBookRequest", book, userId);
                 dispatch({type:'UPDATE_BOOK', book: data});  //return populated tradeRequest book
+ //               toastr.success(`Book ${data.name} updated.`);
                 
             })
             .fail(function(err){
                 console.error("error",err);
+                toastr.error('Error: '+err);
                 //alert(err.responseText);
             });
     }

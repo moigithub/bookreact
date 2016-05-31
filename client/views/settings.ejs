@@ -89,6 +89,9 @@
             <p>Powered by <a href="https://developers.google.com/books/docs/overview">Google Books API</a></p>
         </footer>
         <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+        <script   src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+
         <script type='text/javascript'>
             window.__uid="<% if (user) {%><%= user._id %><%}%>";
             window.__tk="<% if (user) {%><%= user.token %><%}%>";
@@ -114,6 +117,7 @@
                         //console.log("data",data);
                         // socket will add data to state
 //                        dispatch({type: 'ADD_BOOK', book:data})
+                        toastr.success("User Info updated");
                         window.location.href = "/";
                     })
                     .fail(function(err){
