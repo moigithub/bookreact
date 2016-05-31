@@ -1,9 +1,10 @@
 'use strict';
-
+/*
 require('babel-register')({
     presets: ['es2015']  //, 'react'
 })
-
+*/
+var compression = require('compression');
 var jwt    = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var http = require('http');
 var path = require('path');
@@ -23,13 +24,18 @@ var LocalStrategy = require('passport-local').Strategy;
 var flash = require('connect-flash');
 //var ejs = require('ejs');
 
-var app = express();
 
+var app = express();
+app.use(compression()); //enable gzip compressoin
 
 var isDeveloping = process.env.NODE_ENV !== 'production';
 //console.log("env",process.env.NODE_ENV, isDeveloping);
 
 if(isDeveloping){
+  const GLOBALS = {
+    'process.env.NODE_ENV': JSON.stringify('development'),
+    __DEV__: true
+  };  
   require('dotenv').config();
 
   var webpack = require('webpack');
@@ -39,20 +45,15 @@ if(isDeveloping){
   var webpackHotMiddleware = require('webpack-hot-middleware');
   var compiler = webpack(webpackConfig);
   
-  
-  
   app.use(webpackMiddleware(compiler, {
-    lazy: false,
-    noInfo: true,
-    quiet: false,
-    errorDetails: true,
-//      noInfo: true, 
+      noInfo: true,
       publicPath: webpackConfig.output.publicPath,
       stats: {
         colors: true,
       },
-      hot: true,
+//      hot: true,
   }));
+  
   app.use(webpackHotMiddleware(compiler, {
     log: console.log,
     path: '/__webpack_hmr',

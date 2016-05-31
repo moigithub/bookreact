@@ -415,7 +415,7 @@ var MyBookList = connect(mapStateToMyBooksProps,mapDispatchToProps)(_BookList);
 const Request =({whoWantBook, onAccept, onDecline})=>(
     <li className="request list-group-item">
         <span className="">{whoWantBook}</span>
-        <span className="btn-group" role="group" aria-label="...">
+        <span className="btn-group pull-right" role="group" aria-label="...">
             <button className="btn btn-xs btn-info" onClick={onAccept}><span className="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
             <button className="btn btn-xs btn-danger" onClick={onDecline}><span className="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
         </span>
